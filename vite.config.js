@@ -9,17 +9,17 @@ export default defineConfig({
     host: true,
     proxy: {
       '/api': {
-        target: 'https://skillswap-backend-m6k2.onrender.com',
+        target: process.env.VITE_BACKEND_TARGET || 'http://127.0.0.1:5000',
         changeOrigin: true,
         secure: false
       },
       '/uploads': {
-        target: 'https://skillswap-backend-m6k2.onrender.com',
+        target: process.env.VITE_BACKEND_TARGET || 'http://127.0.0.1:5000',
         changeOrigin: true,
         secure: false
       },
       '/socket.io': {
-        target: 'https://skillswap-backend-m6k2.onrender.com',
+        target: process.env.VITE_BACKEND_TARGET || 'http://127.0.0.1:5000',
         ws: true,
         secure: false
       }

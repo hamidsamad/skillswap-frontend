@@ -1,6 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useSocket } from '../context/SocketContext';
+import api from '../api/client';
+import { io } from 'socket.io-client';
 import {
   Sparkles,
   ArrowRightLeft,
@@ -8,6 +11,7 @@ import {
   MapPin,
   Users,
   GraduationCap,
+  Briefcase,
   ArrowRight,
   Star,
   Play,
@@ -31,9 +35,102 @@ import SkillExchangeLogo from '../components/SkillExchangeLogo';
 
 export default function HomePage() {
   const { isAuthenticated } = useAuth();
+  const { socket: authSocket } = useSocket() || {};
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [showVideoModal, setShowVideoModal] = useState(false);
+
+  // Platform Dynamic Statistics (Calculated from Real Database)
+  const [stats, setStats] = useState({
+    activeMembers: 0,
+    successfulSwaps: 0,
+    availableSkills: 0,
+    majorCities: 0,
+    industriesAvailable: 0
+  });
+  const [loadingStats, setLoadingStats] = useState(true);
+
+  const formatNumber = (num) => {
+    const val = Number(num);
+    if (isNaN(val)) return '0';
+    return new Intl.NumberFormat('en-US').format(val);
+  };
+
+  const fetchStatistics = useCallback(async () => {
+    try {
+      const res = await api.get('/statistics');
+      if (res.data && (res.data.success || res.data.statistics)) {
+        const data = res.data.statistics || res.data;
+        setStats({
+          activeMembers: Number(data.activeMembers) || 0,
+          successfulSwaps: Number(data.successfulSwaps) || 0,
+          availableSkills: Number(data.availableSkills) || 0,
+          majorCities: Number(data.majorCities) || 0,
+          industriesAvailable: Number(data.industriesAvailable) || 0
+        });
+      }
+    } catch (err) {
+      console.warn('Could not fetch platform statistics:', err?.message);
+    } finally {
+      setLoadingStats(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchStatistics();
+
+    // Re-fetch when user returns to window tab
+    const handleFocus = () => fetchStatistics();
+    window.addEventListener('focus', handleFocus);
+
+    // Periodic gentle refresh every 30 seconds
+    const interval = setInterval(fetchStatistics, 30000);
+
+    const handleUpdate = (updatedStats) => {
+      if (!updatedStats) return;
+      const data = updatedStats.statistics || updatedStats;
+      setStats({
+        activeMembers: Number(data.activeMembers) || 0,
+        successfulSwaps: Number(data.successfulSwaps) || 0,
+        availableSkills: Number(data.availableSkills) || 0,
+        majorCities: Number(data.majorCities) || 0,
+        industriesAvailable: Number(data.industriesAvailable) || 0
+      });
+      setLoadingStats(false);
+    };
+
+    let cleanupSocket = null;
+    if (authSocket) {
+      authSocket.on('statistics_updated', handleUpdate);
+      cleanupSocket = () => authSocket.off('statistics_updated', handleUpdate);
+    } else {
+      // Connect lightweight guest socket for real-time updates when unauthenticated
+      const rawApiUrl = import.meta.env.VITE_API_URL;
+      const backendUrl = rawApiUrl
+        ? rawApiUrl.replace(/\/api\/?$/, '')
+        : (window.location.hostname === 'localhost' ? 'http://localhost:5000' : window.location.origin);
+
+      try {
+        const guestSocket = io(backendUrl, {
+          transports: ['websocket', 'polling'],
+          reconnectionAttempts: 5
+        });
+        guestSocket.on('statistics_updated', handleUpdate);
+        cleanupSocket = () => {
+          guestSocket.off('statistics_updated', handleUpdate);
+          guestSocket.disconnect();
+        };
+      } catch (sErr) {
+        console.debug('Guest socket init skipped:', sErr?.message);
+      }
+    }
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      clearInterval(interval);
+      if (cleanupSocket) cleanupSocket();
+    };
+  }, [authSocket, fetchStatistics]);
 
   // Close video modal on Escape key
   useEffect(() => {
@@ -309,20 +406,24 @@ export default function HomePage() {
       </section>
 
       {/* ========================================================================= */}
-      {/* 2. PLATFORM STATISTICS STRIP (Matching Exact Reference Layout)            */}
+      {/* 2. PLATFORM STATISTICS STRIP (Dynamic Database-Connected Statistics)      */}
       {/* ========================================================================= */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-[#EAF6EF] dark:bg-[#0E1526] border border-[#D5EAE0] dark:border-slate-800 rounded-2xl sm:rounded-full py-4 sm:py-5 px-4 sm:px-10 shadow-2xs">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 sm:divide-x divide-[#0E7057]/15 dark:divide-slate-800">
+        <div className="bg-[#EAF6EF] dark:bg-[#0E1526] border border-[#D5EAE0] dark:border-slate-800 rounded-2xl lg:rounded-full py-4 sm:py-5 px-4 sm:px-6 lg:px-8 shadow-2xs">
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-3.5 sm:gap-5 lg:gap-0 lg:divide-x divide-[#0E7057]/15 dark:divide-slate-800">
             
             {/* Stat 1: Active Members */}
-            <div className="flex items-center gap-2.5 sm:gap-3.5 p-1 sm:p-0 sm:pl-2">
+            <div className="flex items-center gap-2.5 sm:gap-3.5 p-1 sm:p-0 lg:px-3 xl:px-5">
               <div className="text-[#0E7057] dark:text-emerald-400 shrink-0">
                 <Users className="w-5 h-5 sm:w-6 sm:h-6 stroke-[1.8]" />
               </div>
               <div className="min-w-0">
-                <div className="text-lg xs:text-xl sm:text-2xl font-black text-[#0F243B] dark:text-white font-display leading-tight">
-                  2,450+
+                <div className="text-lg xs:text-xl sm:text-2xl font-black text-[#0F243B] dark:text-white font-display leading-tight flex items-center min-h-[1.75rem]">
+                  {loadingStats ? (
+                    <span className="inline-block w-12 h-5 bg-slate-300/60 dark:bg-slate-700/60 rounded animate-pulse" />
+                  ) : (
+                    <span>{formatNumber(stats.activeMembers)}</span>
+                  )}
                 </div>
                 <div className="text-[10px] xs:text-[11px] text-[#64748B] dark:text-slate-400 font-medium truncate">
                   Active Members
@@ -331,13 +432,17 @@ export default function HomePage() {
             </div>
 
             {/* Stat 2: Successful Swaps */}
-            <div className="flex items-center gap-2.5 sm:gap-3.5 p-1 sm:p-0 sm:pl-6">
+            <div className="flex items-center gap-2.5 sm:gap-3.5 p-1 sm:p-0 lg:px-3 xl:px-5">
               <div className="text-[#0E7057] dark:text-emerald-400 shrink-0">
                 <ArrowRightLeft className="w-5 h-5 sm:w-6 sm:h-6 stroke-[1.8]" />
               </div>
               <div className="min-w-0">
-                <div className="text-lg xs:text-xl sm:text-2xl font-black text-[#0F243B] dark:text-white font-display leading-tight">
-                  1,230+
+                <div className="text-lg xs:text-xl sm:text-2xl font-black text-[#0F243B] dark:text-white font-display leading-tight flex items-center min-h-[1.75rem]">
+                  {loadingStats ? (
+                    <span className="inline-block w-12 h-5 bg-slate-300/60 dark:bg-slate-700/60 rounded animate-pulse" />
+                  ) : (
+                    <span>{formatNumber(stats.successfulSwaps)}</span>
+                  )}
                 </div>
                 <div className="text-[10px] xs:text-[11px] text-[#64748B] dark:text-slate-400 font-medium truncate">
                   Successful Swaps
@@ -345,32 +450,59 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Stat 3: Skills Available */}
-            <div className="flex items-center gap-2.5 sm:gap-3.5 p-1 sm:p-0 sm:pl-6">
+            {/* Stat 3: Available Skills */}
+            <div className="flex items-center gap-2.5 sm:gap-3.5 p-1 sm:p-0 lg:px-3 xl:px-5">
               <div className="text-[#0E7057] dark:text-emerald-400 shrink-0">
                 <GraduationCap className="w-5 h-5 sm:w-6 sm:h-6 stroke-[1.8]" />
               </div>
               <div className="min-w-0">
-                <div className="text-lg xs:text-xl sm:text-2xl font-black text-[#0F243B] dark:text-white font-display leading-tight">
-                  520+
+                <div className="text-lg xs:text-xl sm:text-2xl font-black text-[#0F243B] dark:text-white font-display leading-tight flex items-center min-h-[1.75rem]">
+                  {loadingStats ? (
+                    <span className="inline-block w-12 h-5 bg-slate-300/60 dark:bg-slate-700/60 rounded animate-pulse" />
+                  ) : (
+                    <span>{formatNumber(stats.availableSkills)}</span>
+                  )}
                 </div>
                 <div className="text-[10px] xs:text-[11px] text-[#64748B] dark:text-slate-400 font-medium truncate">
-                  Skills Available
+                  Available Skills
                 </div>
               </div>
             </div>
 
             {/* Stat 4: Major Cities */}
-            <div className="flex items-center gap-2.5 sm:gap-3.5 p-1 sm:p-0 sm:pl-6">
+            <div className="flex items-center gap-2.5 sm:gap-3.5 p-1 sm:p-0 lg:px-3 xl:px-5">
               <div className="text-[#0E7057] dark:text-emerald-400 shrink-0">
                 <MapPin className="w-5 h-5 sm:w-6 sm:h-6 stroke-[1.8]" />
               </div>
               <div className="min-w-0">
-                <div className="text-lg xs:text-xl sm:text-2xl font-black text-[#0F243B] dark:text-white font-display leading-tight">
-                  3
+                <div className="text-lg xs:text-xl sm:text-2xl font-black text-[#0F243B] dark:text-white font-display leading-tight flex items-center min-h-[1.75rem]">
+                  {loadingStats ? (
+                    <span className="inline-block w-12 h-5 bg-slate-300/60 dark:bg-slate-700/60 rounded animate-pulse" />
+                  ) : (
+                    <span>{formatNumber(stats.majorCities)}</span>
+                  )}
                 </div>
                 <div className="text-[10px] xs:text-[11px] text-[#64748B] dark:text-slate-400 font-medium truncate">
                   Major Cities
+                </div>
+              </div>
+            </div>
+
+            {/* Stat 5: Industries Available */}
+            <div className="col-span-2 lg:col-span-1 flex items-center justify-center lg:justify-start gap-2.5 sm:gap-3.5 p-1 sm:p-0 lg:px-3 xl:px-5">
+              <div className="text-[#0E7057] dark:text-emerald-400 shrink-0">
+                <Briefcase className="w-5 h-5 sm:w-6 sm:h-6 stroke-[1.8]" />
+              </div>
+              <div className="min-w-0">
+                <div className="text-lg xs:text-xl sm:text-2xl font-black text-[#0F243B] dark:text-white font-display leading-tight flex items-center min-h-[1.75rem]">
+                  {loadingStats ? (
+                    <span className="inline-block w-12 h-5 bg-slate-300/60 dark:bg-slate-700/60 rounded animate-pulse" />
+                  ) : (
+                    <span>{formatNumber(stats.industriesAvailable)}</span>
+                  )}
+                </div>
+                <div className="text-[10px] xs:text-[11px] text-[#64748B] dark:text-slate-400 font-medium truncate">
+                  Industries Available
                 </div>
               </div>
             </div>
