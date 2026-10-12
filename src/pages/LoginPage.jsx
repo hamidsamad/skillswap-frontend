@@ -17,10 +17,8 @@ import {
   UserPlus
 } from 'lucide-react';
 import ForgotPasswordModal from '../components/ForgotPasswordModal';
-import { triggerGoogleOAuth } from '../utils/googleAuth';
-
 export default function LoginPage() {
-  const { login, googleLogin, user, isAuthenticated, loading } = useAuth();
+  const { login, user, isAuthenticated, loading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -30,7 +28,6 @@ export default function LoginPage() {
   const [error, setError] = useState(location.state?.unauthorizedWarning || '');
   const [successBanner, setSuccessBanner] = useState(location.state?.deletedMsg || '');
   const [showForgotModal, setShowForgotModal] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
 
   // Auto-redirect if already authenticated
   useEffect(() => {
@@ -65,33 +62,6 @@ export default function LoginPage() {
       }
     } else {
       setError(res.message || 'Login failed');
-    }
-  };
-
-  const handleGoogleLogin = async () => {
-    setError('');
-    setSuccessBanner('');
-    setGoogleLoading(true);
-    try {
-      // 1. Open genuine Google account picker & consent flow
-      const { access_token } = await triggerGoogleOAuth();
-
-      // 2. Authenticate real Google identity on backend and get user session
-      const res = await googleLogin({ access_token });
-      if (res.success) {
-        if (res.user?.role === 'admin') {
-          navigate('/admin', { replace: true });
-        } else {
-          navigate('/matches', { replace: true });
-        }
-      } else {
-        setError(res.message || 'Google authentication failed');
-      }
-    } catch (err) {
-      // Clean cancellation or error message without logging into any demo account
-      setError(err.message || 'Google authentication was cancelled or failed.');
-    } finally {
-      setGoogleLoading(false);
     }
   };
 
@@ -357,50 +327,8 @@ export default function LoginPage() {
               </button>
             </form>
 
-            {/* 5. "or" Divider */}
-            <div className="relative my-3.5">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-[#EAEFEA] dark:border-slate-800"></div>
-              </div>
-              <div className="relative flex justify-center text-xs">
-                <span className="bg-white dark:bg-[#0E1526] px-3 text-[#94A3B8] dark:text-slate-400">or</span>
-              </div>
-            </div>
-
-            {/* 6. Continue with Google Button */}
-            <button
-              type="button"
-              disabled={loading || googleLoading}
-              onClick={handleGoogleLogin}
-              className="w-full py-2.5 rounded-full border border-[#E2E8F0] dark:border-slate-700 bg-white dark:bg-[#131B2E] hover:bg-slate-50 dark:hover:bg-[#18233c] text-xs sm:text-sm font-semibold text-[#1E293B] dark:text-white flex items-center justify-center gap-2.5 shadow-2xs transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              {googleLoading ? (
-                <div className="w-4 h-4 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
-                  <path
-                    fill="#4285F4"
-                    d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.66v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.15z"
-                  />
-                  <path
-                    fill="#34A853"
-                    d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"
-                  />
-                  <path
-                    fill="#FBBC05"
-                    d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 10.03 0 12s.45 3.82 1.25 5.42l4.03-3.15z"
-                  />
-                  <path
-                    fill="#EA4335"
-                    d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
-                  />
-                </svg>
-              )}
-              <span>{googleLoading ? 'Connecting with Google...' : 'Continue with Google'}</span>
-            </button>
-
             {/* Bottom "Create a New Account" Section */}
-            <div className="mt-3.5 pt-3 border-t border-[#EAEFEA] dark:border-slate-800 flex items-start gap-2.5">
+            <div className="mt-4 pt-3.5 border-t border-[#EAEFEA] dark:border-slate-800 flex items-start gap-2.5">
               <div className="p-1.5 rounded-lg bg-[#EDF7F2] dark:bg-emerald-950/50 text-[#0E7057] dark:text-emerald-400 shrink-0 mt-0.5">
                 <UserPlus className="w-4 h-4" />
               </div>
