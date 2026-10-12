@@ -244,34 +244,23 @@ export default function VoiceRecorderBar({
     setIsUploading(true);
     setPermissionError('');
 
+    const currentBlob = audioBlob;
+    const currentUrl = audioUrl;
+    const finalDur = audioDuration || recordingTimeRef.current || 1;
+
     try {
-      // Convert Blob to Base64 Data URL for upload
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const base64Audio = reader.result;
-        try {
-          const finalDur = audioDuration || recordingTimeRef.current || 1;
-          await onSendVoice({
-            audioDataUrl: base64Audio,
-            duration: finalDur
-          });
-          // Reset after send
-          cancelRecording();
-        } catch (err) {
-          const msg = err.response?.data?.message || err.message || 'Failed to send voice message';
-          setPermissionError(msg);
-        } finally {
-          setIsUploading(false);
-        }
-      };
-      reader.onerror = () => {
-        setPermissionError('Failed to read recorded audio file');
-        setIsUploading(false);
-      };
-      reader.readAsDataURL(audioBlob);
+      // Pass raw audioBlob directly to avoid 33% Base64 expansion and main-thread blocking
+      await onSendVoice({
+        audioBlob: currentBlob,
+        audioUrl: currentUrl,
+        duration: finalDur
+      });
+      // Reset recorder bar after successful handoff
+      cancelRecording();
     } catch (err) {
-      const msg = err.response?.data?.message || err.message || 'Voice message processing failed';
+      const msg = err.response?.data?.message || err.message || 'Failed to send voice message';
       setPermissionError(msg);
+    } finally {
       setIsUploading(false);
     }
   };

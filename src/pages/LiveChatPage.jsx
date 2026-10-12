@@ -21,7 +21,10 @@ import {
   X,
   Loader2,
   ArrowLeft,
-  Flag
+  Flag,
+  CheckCheck,
+  RefreshCw,
+  AlertCircle
 } from 'lucide-react';
 import UserAvatar from '../components/UserAvatar';
 import UserProfileModal from '../components/UserProfileModal';
@@ -29,6 +32,7 @@ import ReportModal from '../components/ReportModal';
 import VoiceMessagePlayer from '../components/VoiceMessagePlayer';
 import VoiceRecorderBar from '../components/VoiceRecorderBar';
 import ChatMessageAttachments, { formatFileSize, getFileInfo } from '../components/ChatMessageAttachments';
+import { compressImage } from '../utils/imageCompressor';
 
 export default function LiveChatPage() {
   const { user } = useAuth();
@@ -56,6 +60,7 @@ export default function LiveChatPage() {
   const [typingUser, setTypingUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [uploadProgressText, setUploadProgressText] = useState('');
   const [attachedFiles, setAttachedFiles] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
   const [hasNewUnseenMessage, setHasNewUnseenMessage] = useState(false);
@@ -317,7 +322,23 @@ export default function LiveChatPage() {
         const wasNear = checkIfNearBottom();
         setMessages(prev => {
           if (prev.some(m => String(m._id) === String(newMsg._id))) return prev;
-          return [...prev, newMsg];
+
+          // Reconcile optimistic message sent by me
+          const isFromMe = String(newMsg.sender?._id || newMsg.sender) === String(user?._id);
+          if (isFromMe) {
+            const matchingIndex = prev.findIndex(m =>
+              m.tempId &&
+              (m.content === newMsg.content || (newMsg.voiceUrl && m.voiceUrl)) &&
+              (m.status === 'uploading' || m.status === 'sent')
+            );
+            if (matchingIndex !== -1) {
+              const updated = [...prev];
+              updated[matchingIndex] = { ...newMsg, status: 'sent' };
+              return updated;
+            }
+          }
+
+          return [...prev, { ...newMsg, status: 'sent' }];
         });
         markConversationAsRead(msgConvId);
         // Auto-scroll down if user is already reading latest messages
@@ -428,156 +449,292 @@ export default function LiveChatPage() {
     }
   };
 
-  const readFileAsBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  };
-
-  const handleSendMessage = async (e) => {
+  // Send regular or attachment message with optimistic bubble & parallel multipart upload
+  const handleSendMessage = async (e, retryMsg = null) => {
     if (e) e.preventDefault();
-    if ((!inputText.trim() && attachedFiles.length === 0) || !activeConvId) return;
 
-    const content = inputText.trim();
-    const currentAttachments = [...attachedFiles];
-    setInputText('');
-    setAttachedFiles([]);
-    setSending(true);
+    const isRetry = Boolean(retryMsg);
+    const content = isRetry ? (retryMsg.retryPayload?.content || '') : inputText.trim();
+    const currentAttachments = isRetry ? (retryMsg.retryPayload?.rawAttachments || []) : [...attachedFiles];
+
+    if ((!content && currentAttachments.length === 0) || !activeConvId) return;
+
+    if (!isRetry) {
+      setInputText('');
+      setAttachedFiles([]);
+    }
 
     if (socket) {
       socket.emit('typing_stop', { conversationId: activeConvId });
     }
 
-    // Immediately flag and scroll container down to view newly sent content
-    shouldScrollToBottomRef.current = true;
-    isNearBottomRef.current = true;
-    scrollToBottom(true);
-    setHasNewUnseenMessage(false);
+    const tempId = isRetry ? retryMsg.tempId : `temp_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+
+    // Generate immediate local preview attachments
+    const optimisticAttachments = currentAttachments.map(att => ({
+      name: att.name,
+      fileType: att.type,
+      fileSize: att.file?.size || att.size,
+      url: att.previewUrl || (att.file ? URL.createObjectURL(att.file) : ''),
+      isOptimistic: true
+    }));
+
+    const optimisticMessage = {
+      _id: tempId,
+      tempId,
+      conversation: activeConvId,
+      sender: {
+        _id: user._id,
+        name: user.name,
+        avatar: user.avatar,
+        headline: user.headline
+      },
+      content,
+      messageType: currentAttachments.length > 0 ? 'file' : 'text',
+      attachments: optimisticAttachments,
+      createdAt: isRetry ? retryMsg.createdAt : new Date().toISOString(),
+      status: 'uploading',
+      progress: 0,
+      retryPayload: {
+        content,
+        rawAttachments: currentAttachments
+      }
+    };
+
+    if (isRetry) {
+      setMessages(prev => prev.map(m => m.tempId === tempId ? optimisticMessage : m));
+    } else {
+      setMessages(prev => [...prev, optimisticMessage]);
+      shouldScrollToBottomRef.current = true;
+      isNearBottomRef.current = true;
+      scrollToBottom(true);
+      setHasNewUnseenMessage(false);
+    }
     inputRef.current?.focus({ preventScroll: true });
 
     try {
       let uploadedAttachments = [];
 
-      // 1. Upload files to backend/Cloudinary if present
       if (currentAttachments.length > 0) {
-        setUploadProgressText(`Uploading ${currentAttachments.length} document(s)...`);
-        for (let i = 0; i < currentAttachments.length; i++) {
-          const item = currentAttachments[i];
-          setUploadProgressText(`Uploading ${item.name} (${i + 1}/${currentAttachments.length})...`);
-          const base64Data = await readFileAsBase64(item.file);
-          const uploadRes = await api.post('/chat/upload-file', {
-            fileData: base64Data,
-            fileName: item.name,
-            fileType: item.type,
-            fileSize: item.size
+        // Parallel binary upload with client-side image compression & onUploadProgress
+        const uploadPromises = currentAttachments.map(async (item) => {
+          let fileToUpload = item.file;
+
+          // Client-side image compression for fast mobile upload
+          if (fileToUpload && fileToUpload.type && fileToUpload.type.startsWith('image/')) {
+            try {
+              const comp = await compressImage(fileToUpload, {
+                maxWidth: 1600,
+                maxHeight: 1600,
+                quality: 0.82
+              });
+              if (comp && comp.file) {
+                fileToUpload = comp.file;
+              }
+            } catch (compErr) {
+              console.warn('Image compression fallback:', compErr);
+            }
+          }
+
+          const formData = new FormData();
+          formData.append('file', fileToUpload, item.name);
+          formData.append('fileName', item.name);
+          formData.append('fileType', fileToUpload?.type || item.type);
+          formData.append('fileSize', String(fileToUpload?.size || item.size));
+
+          const uploadRes = await api.post('/chat/upload-file', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+            onUploadProgress: (progressEvent) => {
+              if (progressEvent.total) {
+                const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                setMessages(prev => prev.map(m =>
+                  m.tempId === tempId ? { ...m, progress: percent } : m
+                ));
+              }
+            }
           });
 
-          if (uploadRes.data && uploadRes.data.success && uploadRes.data.file) {
-            uploadedAttachments.push(uploadRes.data.file);
+          if (uploadRes.data?.success && uploadRes.data?.file) {
+            return uploadRes.data.file;
           }
-        }
+          throw new Error(uploadRes.data?.message || 'File upload failed');
+        });
+
+        uploadedAttachments = await Promise.all(uploadPromises);
       }
 
-      setUploadProgressText('');
-
-      // 2. Post message with attachments
+      // Save message in database
       const res = await api.post(`/chat/conversations/${activeConvId}/messages`, {
         content,
         attachments: uploadedAttachments,
         messageType: uploadedAttachments.length > 0 ? 'file' : 'text'
       });
 
-      if (res.data.success) {
-        shouldScrollToBottomRef.current = true;
-        isNearBottomRef.current = true;
-        setMessages(prev => {
-          if (prev.some(m => String(m._id) === String(res.data.message._id))) return prev;
-          return [...prev, res.data.message];
-        });
-        inputRef.current?.focus({ preventScroll: true });
+      if (res.data?.success && res.data.message) {
+        const confirmedMessage = { ...res.data.message, status: 'sent' };
+        setMessages(prev => prev.map(m =>
+          m.tempId === tempId ? confirmedMessage : m
+        ));
+
+        setConversations(prev => prev.map(c =>
+          String(c._id) === String(activeConvId)
+            ? {
+                ...c,
+                lastMessage: confirmedMessage,
+                lastMessageAt: confirmedMessage.createdAt
+              }
+            : c
+        ));
+      } else {
+        throw new Error('Failed to save message');
       }
-    } catch (e) {
-      console.error('Failed to send message:', e);
-      // Restore attachments and text if send failed
-      setAttachedFiles(currentAttachments);
-      setInputText(content);
-    } finally {
-      setSending(false);
-      setUploadProgressText('');
+    } catch (err) {
+      console.error('Failed to send message:', err);
+      // Mark as failed in-place so user can tap Retry without losing attachments/text
+      setMessages(prev => prev.map(m =>
+        m.tempId === tempId ? { ...m, status: 'failed', errorMessage: err.message || 'Upload failed' } : m
+      ));
     }
   };
 
-  const handleSendVoiceMessage = async ({ audioDataUrl, duration }) => {
+  // Send voice message with instant optimistic player & direct binary stream upload
+  const handleSendVoiceMessage = async (voiceData, retryMsg = null) => {
     if (!activeConvId) return;
-    setSending(true);
-    shouldScrollToBottomRef.current = true;
-    isNearBottomRef.current = true;
-    scrollToBottom(true);
-    setHasNewUnseenMessage(false);
+
+    const isRetry = Boolean(retryMsg);
+    const audioBlob = isRetry ? retryMsg.retryPayload?.audioBlob : voiceData?.audioBlob;
+    const rawAudioUrl = isRetry ? retryMsg.retryPayload?.audioUrl : voiceData?.audioUrl;
+    const rawAudioDataUrl = isRetry ? retryMsg.retryPayload?.audioDataUrl : voiceData?.audioDataUrl;
+    const duration = isRetry ? retryMsg.retryPayload?.duration : (voiceData?.duration || 1);
+
+    if (!audioBlob && !rawAudioDataUrl && !rawAudioUrl) return;
+
+    const tempId = isRetry ? retryMsg.tempId : `temp_voice_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+    const localVoiceUrl = audioBlob ? URL.createObjectURL(audioBlob) : (rawAudioUrl || rawAudioDataUrl);
+
+    const optimisticMessage = {
+      _id: tempId,
+      tempId,
+      conversation: activeConvId,
+      sender: {
+        _id: user._id,
+        name: user.name,
+        avatar: user.avatar,
+        headline: user.headline
+      },
+      content: '🎤 Voice message',
+      messageType: 'voice',
+      voiceUrl: localVoiceUrl,
+      voiceDuration: duration,
+      createdAt: isRetry ? retryMsg.createdAt : new Date().toISOString(),
+      status: 'uploading',
+      progress: 0,
+      retryPayload: {
+        isVoice: true,
+        audioBlob,
+        audioUrl: localVoiceUrl,
+        audioDataUrl: rawAudioDataUrl,
+        duration
+      }
+    };
+
+    if (isRetry) {
+      setMessages(prev => prev.map(m => m.tempId === tempId ? optimisticMessage : m));
+    } else {
+      setMessages(prev => [...prev, optimisticMessage]);
+      shouldScrollToBottomRef.current = true;
+      isNearBottomRef.current = true;
+      scrollToBottom(true);
+      setHasNewUnseenMessage(false);
+    }
 
     try {
-      // 1. Upload audio to storage endpoint (Cloudinary or backend storage)
-      let voiceUrl = '';
-      let voiceDuration = duration;
+      let serverVoiceUrl = '';
+      let serverDuration = duration;
 
-      try {
-        const uploadRes = await api.post('/chat/upload-voice', {
-          audio: audioDataUrl,
-          duration
+      // 1. Direct binary upload using FormData
+      if (audioBlob) {
+        const formData = new FormData();
+        const ext = audioBlob.type?.includes('mp4') ? 'mp4' : (audioBlob.type?.includes('ogg') ? 'ogg' : 'webm');
+        formData.append('audio', audioBlob, `voice-${Date.now()}.${ext}`);
+        formData.append('duration', String(duration));
+
+        const uploadRes = await api.post('/chat/upload-voice', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+          onUploadProgress: (progressEvent) => {
+            if (progressEvent.total) {
+              const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+              setMessages(prev => prev.map(m =>
+                m.tempId === tempId ? { ...m, progress: percent } : m
+              ));
+            }
+          }
         });
 
         if (uploadRes.data?.success && uploadRes.data?.voiceUrl) {
-          voiceUrl = uploadRes.data.voiceUrl;
-          voiceDuration = uploadRes.data.voiceDuration || duration;
+          serverVoiceUrl = uploadRes.data.voiceUrl;
+          serverDuration = uploadRes.data.voiceDuration || duration;
         }
-      } catch (uploadErr) {
-        console.warn('Voice upload endpoint warning, using client audio fallback:', uploadErr);
-        // If upload endpoint is slow or fails, audioDataUrl ensures the voice note is not lost
-        voiceUrl = audioDataUrl;
+      } else if (rawAudioDataUrl) {
+        // Fallback for base64 data URL
+        const uploadRes = await api.post('/chat/upload-voice', {
+          audio: rawAudioDataUrl,
+          duration
+        });
+        if (uploadRes.data?.success && uploadRes.data?.voiceUrl) {
+          serverVoiceUrl = uploadRes.data.voiceUrl;
+          serverDuration = uploadRes.data.voiceDuration || duration;
+        }
       }
 
-      if (!voiceUrl) {
-        voiceUrl = audioDataUrl;
+      if (!serverVoiceUrl) {
+        serverVoiceUrl = localVoiceUrl;
       }
 
-      // 2. Post voice message to conversation
+      // 2. Post confirmed voice message to conversation
       const res = await api.post(`/chat/conversations/${activeConvId}/messages`, {
         content: '🎤 Voice message',
         messageType: 'voice',
-        voiceUrl,
-        voiceDuration: voiceDuration || duration
+        voiceUrl: serverVoiceUrl,
+        voiceDuration: serverDuration || duration
       });
 
-      if (res.data.success) {
-        shouldScrollToBottomRef.current = true;
-        isNearBottomRef.current = true;
-        setMessages(prev => {
-          if (prev.some(m => String(m._id) === String(res.data.message._id))) return prev;
-          return [...prev, res.data.message];
-        });
+      if (res.data?.success && res.data.message) {
+        const confirmedMessage = { ...res.data.message, status: 'sent' };
+        setMessages(prev => prev.map(m =>
+          m.tempId === tempId ? confirmedMessage : m
+        ));
 
-        // Update conversation last message in sidebar
         setConversations(prev =>
           prev.map(c => {
             if (String(c._id) === String(activeConvId)) {
               return {
                 ...c,
-                lastMessage: res.data.message,
-                lastMessageAt: res.data.message.createdAt
+                lastMessage: confirmedMessage,
+                lastMessageAt: confirmedMessage.createdAt
               };
             }
             return c;
           })
         );
+      } else {
+        throw new Error('Failed to save voice message');
       }
     } catch (err) {
       console.error('Error sending voice message:', err);
-      throw err;
-    } finally {
-      setSending(false);
+      setMessages(prev => prev.map(m =>
+        m.tempId === tempId ? { ...m, status: 'failed', errorMessage: err.message || 'Voice upload failed' } : m
+      ));
+    }
+  };
+
+  // Re-attempt sending a failed message
+  const handleRetryMessage = (msg) => {
+    if (!msg || !msg.retryPayload) return;
+    if (msg.retryPayload.isVoice) {
+      handleSendVoiceMessage(null, msg);
+    } else {
+      handleSendMessage(null, msg);
     }
   };
 
@@ -847,10 +1004,12 @@ export default function LiveChatPage() {
                   messages.map(msg => {
                     const isMe = String(msg.sender?._id || msg.sender) === String(user?._id);
                     const isVoice = msg.messageType === 'voice' || Boolean(msg.voiceUrl);
+                    const isUploading = msg.status === 'uploading';
+                    const isFailed = msg.status === 'failed';
 
                     return (
                       <div
-                        key={msg._id}
+                        key={msg._id || msg.tempId}
                         className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}
                       >
                         <div
@@ -858,7 +1017,7 @@ export default function LiveChatPage() {
                             isMe
                               ? 'bg-[#102B50] text-white rounded-br-xs'
                               : 'bg-[#EAF6EF] dark:bg-[#121A2E] border border-[#07866D]/20 text-[#24364B] dark:text-white rounded-bl-xs'
-                          }`}
+                          } ${isUploading ? 'opacity-90 ring-2 ring-sky-400/40' : ''} ${isFailed ? 'ring-2 ring-rose-500/50' : ''}`}
                         >
                           {/* Flag option for partner's message */}
                           {!isMe && (
@@ -899,10 +1058,50 @@ export default function LiveChatPage() {
                               )}
                             </>
                           )}
+
+                          {/* Inline Upload Progress Bar */}
+                          {isUploading && (
+                            <div className="w-full bg-white/20 dark:bg-black/20 h-1 rounded-full mt-2 overflow-hidden">
+                              <div
+                                className="bg-sky-400 h-full transition-all duration-200"
+                                style={{ width: `${Math.max(10, msg.progress || 10)}%` }}
+                              />
+                            </div>
+                          )}
                         </div>
-                        <span className="text-[10px] text-[#708096] mt-1 px-1 font-medium">
-                          {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </span>
+
+                        {/* Status Footer: Uploading / Failed Retry / Delivered */}
+                        {isUploading ? (
+                          <div className="flex items-center gap-1.5 mt-1 px-1 text-[10px] text-sky-500 dark:text-sky-400 font-semibold animate-pulse">
+                            <Loader2 className="w-2.5 h-2.5 animate-spin" />
+                            <span>Uploading{msg.progress > 0 ? ` ${msg.progress}%` : '...'}</span>
+                          </div>
+                        ) : isFailed ? (
+                          <div className="flex items-center gap-1.5 mt-1 px-1">
+                            <span className="text-[10px] text-rose-500 font-bold flex items-center gap-1">
+                              <AlertCircle className="w-3 h-3 text-rose-500" />
+                              Failed
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleRetryMessage(msg)}
+                              className="text-[10px] font-bold text-sky-600 dark:text-sky-400 hover:underline flex items-center gap-1 cursor-pointer bg-sky-500/10 hover:bg-sky-500/20 px-1.5 py-0.5 rounded-md transition-colors"
+                              title="Tap to retry sending this message"
+                            >
+                              <RefreshCw className="w-2.5 h-2.5" />
+                              Retry
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1 text-[10px] text-[#708096] dark:text-slate-400 mt-1 px-1 font-medium">
+                            <span>
+                              {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                            {isMe && (
+                              <CheckCheck className="w-3 h-3 text-[#16855F]" title="Delivered" />
+                            )}
+                          </div>
+                        )}
                       </div>
                     );
                   })
