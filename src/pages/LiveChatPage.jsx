@@ -608,6 +608,10 @@ export default function LiveChatPage() {
     const duration = isRetry ? retryMsg.retryPayload?.duration : (voiceData?.duration || 1);
 
     if (!audioBlob && !rawAudioDataUrl && !rawAudioUrl) return;
+    if (audioBlob && audioBlob.size === 0) {
+      console.warn('Cannot send empty voice recording');
+      return;
+    }
 
     const tempId = isRetry ? retryMsg.tempId : `temp_voice_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
     const localVoiceUrl = audioBlob ? URL.createObjectURL(audioBlob) : (rawAudioUrl || rawAudioDataUrl);
@@ -1146,6 +1150,7 @@ export default function LiveChatPage() {
                 <VoiceRecorderBar
                   onSendVoice={handleSendVoiceMessage}
                   disabled={sending}
+                  maxDuration={60}
                   renderTextInput={(micButton) => (
                     <div className="space-y-2">
                       {/* Attached Files Preview Strip */}
