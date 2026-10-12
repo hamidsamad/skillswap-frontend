@@ -59,10 +59,48 @@ export default function LiveChatPage() {
   const [attachedFiles, setAttachedFiles] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
   const [uploadProgressText, setUploadProgressText] = useState('');
+  const [hasNewUnseenMessage, setHasNewUnseenMessage] = useState(false);
 
   const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
+  const isNearBottomRef = useRef(true);
+  const inputRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const fileInputRef = useRef(null);
+
+  // Check if message container is scrolled near bottom (within 120px threshold)
+  const checkIfNearBottom = () => {
+    const container = messagesContainerRef.current;
+    if (!container) return true;
+    const threshold = 120;
+    const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+    return distanceFromBottom <= threshold;
+  };
+
+  // Track user manual scrolling to respect reading history
+  const handleMessagesScroll = () => {
+    const near = checkIfNearBottom();
+    isNearBottomRef.current = near;
+    if (near) {
+      setHasNewUnseenMessage(false);
+    }
+  };
+
+  // Safe container-scoped scrolling that NEVER touches the browser window scroll
+  const scrollToBottom = (smooth = true) => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+    requestAnimationFrame(() => {
+      try {
+        container.scrollTo({
+          top: container.scrollHeight,
+          behavior: smooth ? 'smooth' : 'auto'
+        });
+      } catch (_) {
+        container.scrollTop = container.scrollHeight;
+      }
+    });
+  };
 
   const startChatWithLearner = async (learnerUserId) => {
     try {
@@ -148,6 +186,9 @@ export default function LiveChatPage() {
         setConversations(prev =>
           prev.map(c => String(c._id) === String(convId) ? { ...c, unreadCount: 0 } : c)
         );
+        setHasNewUnseenMessage(false);
+        // Instant scroll to bottom when opening a conversation
+        scrollToBottom(false);
       }
     } catch (e) {
       console.error('Error fetching messages:', e);
@@ -165,6 +206,7 @@ export default function LiveChatPage() {
       fetchMessages(activeConvId);
       joinConversation(activeConvId);
       setSearchParams({ conversationId: activeConvId });
+      setHasNewUnseenMessage(false);
 
       return () => {
         leaveConversation(activeConvId);
@@ -172,10 +214,12 @@ export default function LiveChatPage() {
     }
   }, [activeConvId]);
 
-  // Scroll to bottom on messages change
+  // Scroll smoothly when typing starts only if user is already near bottom
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, typingUser]);
+    if (typingUser && checkIfNearBottom()) {
+      scrollToBottom(true);
+    }
+  }, [typingUser]);
 
   // Socket event listeners for real-time messages & typing
   useEffect(() => {
@@ -204,11 +248,18 @@ export default function LiveChatPage() {
       });
 
       if (isCurrentActive) {
+        const wasNear = checkIfNearBottom();
         setMessages(prev => {
           if (prev.some(m => String(m._id) === String(newMsg._id))) return prev;
           return [...prev, newMsg];
         });
         markConversationAsRead(msgConvId);
+        // Only auto-scroll down if user is already reading latest messages
+        if (wasNear) {
+          scrollToBottom(true);
+        } else {
+          setHasNewUnseenMessage(true);
+        }
       }
     };
 
@@ -319,7 +370,7 @@ export default function LiveChatPage() {
   };
 
   const handleSendMessage = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     if ((!inputText.trim() && attachedFiles.length === 0) || !activeConvId) return;
 
     const content = inputText.trim();
@@ -331,6 +382,11 @@ export default function LiveChatPage() {
     if (socket) {
       socket.emit('typing_stop', { conversationId: activeConvId });
     }
+
+    // Immediately scroll container down to view newly sent content
+    scrollToBottom(true);
+    setHasNewUnseenMessage(false);
+    inputRef.current?.focus({ preventScroll: true });
 
     try {
       let uploadedAttachments = [];
@@ -369,6 +425,8 @@ export default function LiveChatPage() {
           if (prev.some(m => String(m._id) === String(res.data.message._id))) return prev;
           return [...prev, res.data.message];
         });
+        scrollToBottom(true);
+        inputRef.current?.focus({ preventScroll: true });
       }
     } catch (e) {
       console.error('Failed to send message:', e);
@@ -384,6 +442,8 @@ export default function LiveChatPage() {
   const handleSendVoiceMessage = async ({ audioDataUrl, duration }) => {
     if (!activeConvId) return;
     setSending(true);
+    scrollToBottom(true);
+    setHasNewUnseenMessage(false);
 
     try {
       // 1. Upload audio to storage endpoint (Cloudinary or backend storage)
@@ -423,6 +483,7 @@ export default function LiveChatPage() {
           if (prev.some(m => String(m._id) === String(res.data.message._id))) return prev;
           return [...prev, res.data.message];
         });
+        scrollToBottom(true);
 
         // Update conversation last message in sidebar
         setConversations(prev =>
@@ -457,8 +518,8 @@ export default function LiveChatPage() {
   );
 
   return (
-    <div className="max-w-7xl mx-auto px-2 xs:px-4 sm:px-6 lg:px-8 py-3 sm:py-6">
-      <div className="card-clean overflow-hidden h-[calc(100dvh-130px)] sm:h-[calc(100vh-140px)] min-h-[480px] flex flex-col md:flex-row shadow-xl">
+    <div className="w-full max-w-7xl mx-auto px-2 xs:px-3 sm:px-6 lg:px-8 py-2 sm:py-4 h-full flex flex-col min-h-0 flex-1">
+      <div className="card-clean overflow-hidden flex-1 flex flex-col md:flex-row shadow-xl min-h-0">
         {/* Left Sidebar: Conversations List */}
         <div className={`w-full md:w-80 lg:w-96 border-b md:border-b-0 md:border-r border-[#E5EAE7] dark:border-slate-800 flex flex-col bg-white dark:bg-[#0A0F1D] ${
           activeConvId ? 'hidden md:flex' : 'flex-1 md:flex-none flex'
@@ -696,7 +757,11 @@ export default function LiveChatPage() {
               </div>
 
               {/* Messages Feed */}
-              <div className="flex-1 p-4 md:p-6 overflow-y-auto space-y-4">
+              <div
+                ref={messagesContainerRef}
+                onScroll={handleMessagesScroll}
+                className="flex-1 min-h-0 p-3 xs:p-4 md:p-6 overflow-y-auto space-y-3.5 sm:space-y-4 touch-scroll overscroll-contain relative"
+              >
                 {messages.length === 0 ? (
                   <div className="py-24 text-center">
                     <span className="text-4xl block mb-2">💬</span>
@@ -781,11 +846,28 @@ export default function LiveChatPage() {
                   </div>
                 )}
 
+                {/* Floating "New Message" badge if user has scrolled up to read earlier history */}
+                {hasNewUnseenMessage && (
+                  <div className="sticky bottom-2 flex justify-center z-20 pointer-events-none">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        scrollToBottom(true);
+                        setHasNewUnseenMessage(false);
+                      }}
+                      className="pointer-events-auto px-3.5 py-1.5 rounded-full bg-[#07866D] hover:bg-[#086B57] text-white text-xs font-bold shadow-lg flex items-center gap-1.5 active:scale-95 transition-all cursor-pointer animate-in fade-in slide-in-from-bottom-2"
+                      title="Scroll to latest message"
+                    >
+                      <span>↓ New message</span>
+                    </button>
+                  </div>
+                )}
+
                 <div ref={messagesEndRef} />
               </div>
 
               {/* Message Input & Voice Bar */}
-              <div className="p-3 md:p-4 bg-white/95 dark:bg-[#0D1424]/95 border-t border-slate-200/80 dark:border-slate-800/80">
+              <div className="p-3 md:p-4 bg-white/95 dark:bg-[#0D1424]/95 border-t border-slate-200/80 dark:border-slate-800/80 shrink-0">
                 <VoiceRecorderBar
                   onSendVoice={handleSendVoiceMessage}
                   disabled={sending}
@@ -891,6 +973,7 @@ export default function LiveChatPage() {
 
                         <div className="flex-1 relative flex items-center min-w-0">
                           <input
+                            ref={inputRef}
                             type="text"
                             value={inputText}
                             onChange={handleInputChange}

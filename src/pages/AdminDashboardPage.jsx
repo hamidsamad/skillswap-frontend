@@ -487,7 +487,7 @@ export default function AdminDashboardPage() {
         <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-200">
           {/* Key Metric KPI Cards Row */}
           {stats && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+            <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
               {/* Total Users */}
               <div className="card-clean p-4 sm:p-5 hover:-translate-y-0.5 transition-all">
                 <div className="flex items-center justify-between text-[#708096] dark:text-slate-400 mb-2">
@@ -982,7 +982,7 @@ export default function AdminDashboardPage() {
             ) : (
               <>
                 {/* Desktop Data Table */}
-                <div className="hidden md:block overflow-x-auto no-scrollbar">
+                <div className="hidden md:block overflow-x-auto no-scrollbar touch-scroll">
                   <table className="w-full text-left text-xs min-w-[840px]">
                     <thead className="border-b border-[#E5EAE7] dark:border-slate-800 text-[#708096] dark:text-slate-400 font-extrabold uppercase tracking-wider text-[10px]">
                       <tr>
@@ -1211,7 +1211,7 @@ export default function AdminDashboardPage() {
               </h3>
             </div>
 
-            <div className="overflow-x-auto no-scrollbar">
+            <div className="overflow-x-auto no-scrollbar touch-scroll">
               <table className="w-full text-left text-xs min-w-[960px]">
                 <thead className="border-b border-[#E5EAE7] dark:border-slate-800 text-[#708096] dark:text-slate-400 font-extrabold uppercase tracking-wider text-[10px]">
                   <tr>
@@ -1495,7 +1495,7 @@ export default function AdminDashboardPage() {
                 No administrative logs recorded yet.
               </div>
             ) : (
-              <div className="overflow-x-auto no-scrollbar">
+              <div className="overflow-x-auto no-scrollbar touch-scroll">
                 <table className="w-full text-left text-xs min-w-[700px]">
                   <thead className="border-b border-[#E5EAE7] dark:border-slate-800 text-[#708096] dark:text-slate-400 font-extrabold uppercase tracking-wider text-[10px]">
                     <tr>

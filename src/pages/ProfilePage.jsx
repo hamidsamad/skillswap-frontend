@@ -412,7 +412,7 @@ export default function ProfilePage() {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 min-h-[820px]">
+        <div className="grid grid-cols-1 lg:grid-cols-12 min-h-0 lg:min-h-[820px]">
           
           {/* ========================================================= */}
           {/* LEFT SIDEBAR NAVIGATION (Matching Reference Design)       */}

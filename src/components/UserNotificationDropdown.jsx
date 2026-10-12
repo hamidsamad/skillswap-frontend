@@ -106,7 +106,7 @@ export default function UserNotificationDropdown({ className = '' }) {
 
       {/* Dropdown Surface */}
       {isOpen && (
-        <div className="absolute right-0 mt-2.5 w-[330px] sm:w-[380px] rounded-2xl bg-white dark:bg-[#0E1526] border border-[#E5EAE7] dark:border-slate-800 shadow-2xl p-0 z-50 animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
+        <div className="absolute right-[-48px] xs:right-0 mt-2.5 w-[min(calc(100vw-1rem),360px)] sm:w-[380px] rounded-2xl bg-white dark:bg-[#0E1526] border border-[#E5EAE7] dark:border-slate-800 shadow-2xl p-0 z-50 animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
           
           {/* Header */}
           <div className="p-3.5 sm:p-4 border-b border-[#E5EAE7] dark:border-slate-800 flex items-center justify-between bg-[#FAF9F5]/70 dark:bg-[#080B14]/60">

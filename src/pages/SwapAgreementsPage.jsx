@@ -296,7 +296,7 @@ export default function SwapAgreementsPage() {
                   </div>
 
                   {/* Agreement Details / Logistics (Spec 10-E) */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                  <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 text-xs">
                     <div className="p-3 rounded-2xl bg-[#FAF9F5] dark:bg-slate-900/60 border border-[#E5EAE7] dark:border-slate-800">
                       <span className="text-[#708096] flex items-center gap-1.5 mb-1 text-[11px] font-bold">
                         <Calendar className="w-3.5 h-3.5 text-[#07866D]" /> Duration
