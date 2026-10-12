@@ -49,7 +49,7 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full backdrop-blur-xl bg-[#FAF9F5]/95 dark:bg-[#080B14]/90 border-b border-[#E5EAE7] dark:border-slate-800 transition-colors duration-200 shadow-[0_1px_3px_rgba(16,43,80,0.04)]">
+      <header className="sticky top-0 z-40 w-full shrink-0 backdrop-blur-xl bg-[#FAF9F5]/95 dark:bg-[#080B14]/90 border-b border-[#E5EAE7] dark:border-slate-800 transition-colors duration-200 shadow-[0_1px_3px_rgba(16,43,80,0.04)]">
       <div className="w-full px-3 xs:px-4 sm:px-6 lg:px-8 xl:px-12 h-16 sm:h-20 lg:h-[84px] flex items-center justify-between">
         {/* Brand Identity */}
         <div className="flex items-center shrink-0">

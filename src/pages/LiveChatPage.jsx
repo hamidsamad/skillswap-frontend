@@ -221,6 +221,28 @@ export default function LiveChatPage() {
     }
   }, [typingUser]);
 
+  // Handle window and mobile visualViewport resizing (e.g. virtual keyboard open/close)
+  useEffect(() => {
+    const handleViewportResize = () => {
+      if (checkIfNearBottom()) {
+        scrollToBottom(false);
+      }
+    };
+
+    window.addEventListener('resize', handleViewportResize);
+    const vv = window.visualViewport;
+    if (vv) {
+      vv.addEventListener('resize', handleViewportResize);
+    }
+
+    return () => {
+      window.removeEventListener('resize', handleViewportResize);
+      if (vv) {
+        vv.removeEventListener('resize', handleViewportResize);
+      }
+    };
+  }, []);
+
   // Socket event listeners for real-time messages & typing
   useEffect(() => {
     if (!socket) return;
@@ -518,13 +540,13 @@ export default function LiveChatPage() {
   );
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-2 xs:px-3 sm:px-6 lg:px-8 py-2 sm:py-4 h-full flex flex-col min-h-0 flex-1">
-      <div className="card-clean overflow-hidden flex-1 flex flex-col md:flex-row shadow-xl min-h-0">
+    <div className="w-full max-w-7xl mx-auto px-2 xs:px-3 sm:px-6 lg:px-8 py-1.5 xs:py-2 sm:py-3.5 h-full flex flex-col min-h-0 flex-1 overflow-hidden">
+      <div className="card-clean overflow-hidden flex-1 flex flex-col md:flex-row shadow-xl min-h-0 h-full">
         {/* Left Sidebar: Conversations List */}
-        <div className={`w-full md:w-80 lg:w-96 border-b md:border-b-0 md:border-r border-[#E5EAE7] dark:border-slate-800 flex flex-col bg-white dark:bg-[#0A0F1D] ${
+        <div className={`w-full md:w-80 lg:w-96 border-b md:border-b-0 md:border-r border-[#E5EAE7] dark:border-slate-800 flex flex-col bg-white dark:bg-[#0A0F1D] min-h-0 h-full overflow-hidden ${
           activeConvId ? 'hidden md:flex' : 'flex-1 md:flex-none flex'
         }`}>
-          <div className="p-4 sm:p-5 border-b border-[#E5EAE7] dark:border-slate-800 flex items-center justify-between">
+          <div className="p-4 sm:p-5 border-b border-[#E5EAE7] dark:border-slate-800 flex items-center justify-between shrink-0">
             <div>
               <h2 className="text-base sm:text-lg font-extrabold text-[#102B50] dark:text-white flex items-center gap-2">
                 <span className="p-2 rounded-xl bg-[#EAF6EF] text-[#07866D]">
@@ -551,7 +573,7 @@ export default function LiveChatPage() {
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto divide-y divide-[#E5EAE7] dark:divide-slate-800/60 touch-scroll">
+          <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-[#E5EAE7] dark:divide-slate-800/60 touch-scroll overscroll-contain">
             {loading ? (
               <div className="p-8 text-center text-xs text-[#708096] font-medium">Loading conversations...</div>
             ) : conversations.length === 0 ? (
@@ -639,7 +661,7 @@ export default function LiveChatPage() {
 
         {/* Right Chat Area */}
         <div
-          className={`flex-1 flex flex-col bg-[#FAF9F5] dark:bg-[#070B16] relative min-w-0 ${
+          className={`flex-1 flex flex-col bg-[#FAF9F5] dark:bg-[#070B16] relative min-w-0 min-h-0 h-full overflow-hidden ${
             !activeConvId ? 'hidden md:flex' : 'flex'
           }`}
           onDragOver={handleDragOver}
@@ -664,7 +686,7 @@ export default function LiveChatPage() {
           {activeConv ? (
             <>
               {/* Active Conversation Header */}
-              <div className="p-3 sm:p-4 border-b border-[#E5EAE7] dark:border-slate-800 bg-white dark:bg-[#0A0F1D] flex items-center justify-between gap-2 sm:gap-4">
+              <div className="p-3 sm:p-4 border-b border-[#E5EAE7] dark:border-slate-800 bg-white dark:bg-[#0A0F1D] flex items-center justify-between gap-2 sm:gap-4 shrink-0 z-10 select-none">
                 <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                   <button
                     type="button"
@@ -867,7 +889,7 @@ export default function LiveChatPage() {
               </div>
 
               {/* Message Input & Voice Bar */}
-              <div className="p-3 md:p-4 bg-white/95 dark:bg-[#0D1424]/95 border-t border-slate-200/80 dark:border-slate-800/80 shrink-0">
+              <div className="p-2.5 xs:p-3 md:p-4 bg-white/98 dark:bg-[#0D1424]/98 backdrop-blur-xs border-t border-slate-200/80 dark:border-slate-800/80 shrink-0 relative w-full z-10 shadow-[0_-2px_10px_rgba(0,0,0,0.02)]">
                 <VoiceRecorderBar
                   onSendVoice={handleSendVoiceMessage}
                   disabled={sending}
@@ -977,6 +999,11 @@ export default function LiveChatPage() {
                             type="text"
                             value={inputText}
                             onChange={handleInputChange}
+                            onFocus={() => {
+                              setTimeout(() => {
+                                scrollToBottom(true);
+                              }, 150);
+                            }}
                             onKeyDown={(e) => {
                               if (e.key === 'Enter' && !e.shiftKey) {
                                 e.preventDefault();
@@ -1033,7 +1060,7 @@ export default function LiveChatPage() {
               </div>
             </>
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-slate-400">
+            <div className="flex-1 min-h-0 h-full flex flex-col items-center justify-center p-8 text-center text-slate-400 overflow-y-auto">
               <div className="w-16 h-16 rounded-3xl bg-slate-100 dark:bg-slate-800/60 flex items-center justify-center text-slate-400 mb-4 border border-slate-200 dark:border-slate-700/60 shadow-inner">
                 <MessageSquare className="w-8 h-8 text-sky-500" />
               </div>

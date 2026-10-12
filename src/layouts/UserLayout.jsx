@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
@@ -21,6 +21,16 @@ export default function UserLayout() {
   }
 
   const isChatRoute = location.pathname === '/chat';
+
+  // Prevent background document scrolling when in full-height chat mode
+  useEffect(() => {
+    if (isChatRoute) {
+      document.body.classList.add('overflow-hidden');
+      return () => {
+        document.body.classList.remove('overflow-hidden');
+      };
+    }
+  }, [isChatRoute]);
 
   return (
     <div
