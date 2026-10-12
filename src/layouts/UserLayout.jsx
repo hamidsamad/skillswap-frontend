@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
@@ -21,19 +21,71 @@ export default function UserLayout() {
   }
 
   const isChatRoute = location.pathname === '/chat';
+  const [viewportHeight, setViewportHeight] = useState(() => {
+    if (typeof window !== 'undefined' && window.visualViewport) {
+      return Math.round(window.visualViewport.height);
+    }
+    return null;
+  });
 
-  // Prevent background document scrolling when in full-height chat mode
+  // Track visual viewport height on mobile devices (especially iOS Safari virtual keyboard)
+  useEffect(() => {
+    if (!isChatRoute) {
+      setViewportHeight(null);
+      return;
+    }
+
+    const updateHeight = () => {
+      if (window.visualViewport) {
+        setViewportHeight(Math.round(window.visualViewport.height));
+      }
+    };
+
+    updateHeight();
+
+    const vv = window.visualViewport;
+    if (vv) {
+      vv.addEventListener('resize', updateHeight);
+      vv.addEventListener('scroll', updateHeight);
+    }
+    window.addEventListener('resize', updateHeight);
+
+    return () => {
+      if (vv) {
+        vv.removeEventListener('resize', updateHeight);
+        vv.removeEventListener('scroll', updateHeight);
+      }
+      window.removeEventListener('resize', updateHeight);
+    };
+  }, [isChatRoute]);
+
+  // Prevent background document scrolling and iOS rubber-banding when in full-height chat mode
   useEffect(() => {
     if (isChatRoute) {
       document.body.classList.add('overflow-hidden');
+      document.documentElement.classList.add('overflow-hidden');
+      const handleWindowScroll = () => {
+        if (window.scrollY !== 0 || document.documentElement.scrollTop !== 0) {
+          window.scrollTo(0, 0);
+        }
+      };
+      window.addEventListener('scroll', handleWindowScroll);
+
       return () => {
         document.body.classList.remove('overflow-hidden');
+        document.documentElement.classList.remove('overflow-hidden');
+        window.removeEventListener('scroll', handleWindowScroll);
       };
     }
   }, [isChatRoute]);
 
   return (
     <div
+      style={
+        isChatRoute && viewportHeight
+          ? { height: `${viewportHeight}px`, maxHeight: `${viewportHeight}px` }
+          : undefined
+      }
       className={`${
         isChatRoute
           ? 'h-screen h-[100dvh] overflow-hidden'

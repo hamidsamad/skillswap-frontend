@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
@@ -64,15 +64,16 @@ export default function LiveChatPage() {
   const messagesEndRef = useRef(null);
   const messagesContainerRef = useRef(null);
   const isNearBottomRef = useRef(true);
+  const shouldScrollToBottomRef = useRef(false);
   const inputRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const fileInputRef = useRef(null);
 
-  // Check if message container is scrolled near bottom (within 120px threshold)
+  // Check if message container is scrolled near bottom (within 150px threshold)
   const checkIfNearBottom = () => {
     const container = messagesContainerRef.current;
     if (!container) return true;
-    const threshold = 120;
+    const threshold = 150;
     const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
     return distanceFromBottom <= threshold;
   };
@@ -86,11 +87,13 @@ export default function LiveChatPage() {
     }
   };
 
-  // Safe container-scoped scrolling that NEVER touches the browser window scroll
+  // Reliable container-scoped scrolling that NEVER touches the browser window scroll
   const scrollToBottom = (smooth = true) => {
     const container = messagesContainerRef.current;
+    const end = messagesEndRef.current;
     if (!container) return;
-    requestAnimationFrame(() => {
+
+    const doScroll = () => {
       try {
         container.scrollTo({
           top: container.scrollHeight,
@@ -99,8 +102,38 @@ export default function LiveChatPage() {
       } catch (_) {
         container.scrollTop = container.scrollHeight;
       }
+
+      if (end) {
+        try {
+          end.scrollIntoView({
+            behavior: smooth ? 'smooth' : 'auto',
+            block: 'end',
+            inline: 'nearest'
+          });
+        } catch (_) {}
+      }
+    };
+
+    doScroll();
+    requestAnimationFrame(() => {
+      doScroll();
     });
   };
+
+  // Reliable message auto-scrolling: runs immediately after messages render in the DOM
+  useLayoutEffect(() => {
+    if (messages.length === 0) return;
+
+    if (shouldScrollToBottomRef.current || isNearBottomRef.current) {
+      scrollToBottom(true);
+      const timer = setTimeout(() => {
+        scrollToBottom(true);
+      }, 60);
+      shouldScrollToBottomRef.current = false;
+      setHasNewUnseenMessage(false);
+      return () => clearTimeout(timer);
+    }
+  }, [messages.length, messages[messages.length - 1]?._id]);
 
   const startChatWithLearner = async (learnerUserId) => {
     try {
@@ -187,8 +220,11 @@ export default function LiveChatPage() {
           prev.map(c => String(c._id) === String(convId) ? { ...c, unreadCount: 0 } : c)
         );
         setHasNewUnseenMessage(false);
+        shouldScrollToBottomRef.current = true;
+        isNearBottomRef.current = true;
         // Instant scroll to bottom when opening a conversation
         scrollToBottom(false);
+        setTimeout(() => scrollToBottom(false), 50);
       }
     } catch (e) {
       console.error('Error fetching messages:', e);
@@ -224,8 +260,9 @@ export default function LiveChatPage() {
   // Handle window and mobile visualViewport resizing (e.g. virtual keyboard open/close)
   useEffect(() => {
     const handleViewportResize = () => {
-      if (checkIfNearBottom()) {
+      if (isNearBottomRef.current || shouldScrollToBottomRef.current) {
         scrollToBottom(false);
+        setTimeout(() => scrollToBottom(true), 100);
       }
     };
 
@@ -276,10 +313,12 @@ export default function LiveChatPage() {
           return [...prev, newMsg];
         });
         markConversationAsRead(msgConvId);
-        // Only auto-scroll down if user is already reading latest messages
+        // Auto-scroll down if user is already reading latest messages
         if (wasNear) {
-          scrollToBottom(true);
+          shouldScrollToBottomRef.current = true;
+          isNearBottomRef.current = true;
         } else {
+          shouldScrollToBottomRef.current = false;
           setHasNewUnseenMessage(true);
         }
       }
@@ -405,7 +444,9 @@ export default function LiveChatPage() {
       socket.emit('typing_stop', { conversationId: activeConvId });
     }
 
-    // Immediately scroll container down to view newly sent content
+    // Immediately flag and scroll container down to view newly sent content
+    shouldScrollToBottomRef.current = true;
+    isNearBottomRef.current = true;
     scrollToBottom(true);
     setHasNewUnseenMessage(false);
     inputRef.current?.focus({ preventScroll: true });
@@ -443,11 +484,12 @@ export default function LiveChatPage() {
       });
 
       if (res.data.success) {
+        shouldScrollToBottomRef.current = true;
+        isNearBottomRef.current = true;
         setMessages(prev => {
           if (prev.some(m => String(m._id) === String(res.data.message._id))) return prev;
           return [...prev, res.data.message];
         });
-        scrollToBottom(true);
         inputRef.current?.focus({ preventScroll: true });
       }
     } catch (e) {
@@ -464,6 +506,8 @@ export default function LiveChatPage() {
   const handleSendVoiceMessage = async ({ audioDataUrl, duration }) => {
     if (!activeConvId) return;
     setSending(true);
+    shouldScrollToBottomRef.current = true;
+    isNearBottomRef.current = true;
     scrollToBottom(true);
     setHasNewUnseenMessage(false);
 
@@ -501,11 +545,12 @@ export default function LiveChatPage() {
       });
 
       if (res.data.success) {
+        shouldScrollToBottomRef.current = true;
+        isNearBottomRef.current = true;
         setMessages(prev => {
           if (prev.some(m => String(m._id) === String(res.data.message._id))) return prev;
           return [...prev, res.data.message];
         });
-        scrollToBottom(true);
 
         // Update conversation last message in sidebar
         setConversations(prev =>
@@ -874,6 +919,8 @@ export default function LiveChatPage() {
                     <button
                       type="button"
                       onClick={() => {
+                        shouldScrollToBottomRef.current = true;
+                        isNearBottomRef.current = true;
                         scrollToBottom(true);
                         setHasNewUnseenMessage(false);
                       }}
@@ -885,7 +932,7 @@ export default function LiveChatPage() {
                   </div>
                 )}
 
-                <div ref={messagesEndRef} />
+                <div ref={messagesEndRef} className="h-px w-full shrink-0" aria-hidden="true" />
               </div>
 
               {/* Message Input & Voice Bar */}
@@ -1000,9 +1047,10 @@ export default function LiveChatPage() {
                             value={inputText}
                             onChange={handleInputChange}
                             onFocus={() => {
-                              setTimeout(() => {
-                                scrollToBottom(true);
-                              }, 150);
+                              shouldScrollToBottomRef.current = true;
+                              scrollToBottom(false);
+                              setTimeout(() => scrollToBottom(true), 150);
+                              setTimeout(() => scrollToBottom(true), 350);
                             }}
                             onKeyDown={(e) => {
                               if (e.key === 'Enter' && !e.shiftKey) {
