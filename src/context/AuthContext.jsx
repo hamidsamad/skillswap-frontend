@@ -147,6 +147,26 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const googleLogin = async (payload) => {
+    setLoading(true);
+    try {
+      const body = typeof payload === 'string' ? { credential: payload } : payload;
+      const res = await api.post('/auth/google', body);
+      if (res.data.success) {
+        setAuthData(res.data.token, res.data.user, res.data.profile);
+        return { success: true, user: res.data.user, isNewUser: res.data.isNewUser };
+      }
+      return { success: false, message: res.data.message || 'Google authentication failed' };
+    } catch (err) {
+      return {
+        success: false,
+        message: extractErrorMessage(err, 'Google authentication error')
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const demoLogin = async (role = 'ali') => {
     setLoading(true);
     try {
@@ -215,6 +235,7 @@ export function AuthProvider({ children }) {
         isAdmin: user?.role === 'admin',
         login,
         register,
+        googleLogin,
         demoLogin,
         deleteAccount,
         logout,

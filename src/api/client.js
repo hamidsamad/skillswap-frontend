@@ -38,7 +38,8 @@ api.interceptors.response.use(
       originalRequest &&
       !originalRequest.url.includes('/auth/login') &&
       !originalRequest.url.includes('/auth/register') &&
-      !originalRequest.url.includes('/auth/demo-login')
+      !originalRequest.url.includes('/auth/demo-login') &&
+      !originalRequest.url.includes('/auth/google')
     ) {
       console.warn('Session expired or unauthorized on protected route. Clearing token.');
       localStorage.removeItem('skillswap_token');
