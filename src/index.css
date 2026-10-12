@@ -259,3 +259,31 @@ select:-webkit-autofill {
   box-shadow: 0 0 0 1000px #0f172a inset !important;
 }
 
+/* ========================================================================= */
+/* Mobile Input Auto-Zoom Prevention (iOS Safari & WebKit 16px Rule)         */
+/* Enforces minimum 16px font size on mobile screens (< 768px) so iOS Safari */
+/* and Chrome on mobile do not automatically zoom in when focusing inputs.   */
+/* Avoids overriding desktop styles unnecessarily.                           */
+/* ========================================================================= */
+@media screen and (max-width: 767px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+  textarea,
+  select,
+  .chat-input,
+  .message-input {
+    font-size: 16px !important;
+  }
+}
+
+.chat-input,
+.message-input {
+  font-size: 16px;
+}
+
+@media screen and (min-width: 768px) {
+  .chat-input,
+  .message-input {
+    font-size: 0.875rem; /* 14px on desktop (md:) */
+  }
+}
+

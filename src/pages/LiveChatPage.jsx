@@ -58,8 +58,26 @@ export default function LiveChatPage() {
   const [sending, setSending] = useState(false);
   const [attachedFiles, setAttachedFiles] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
-  const [uploadProgressText, setUploadProgressText] = useState('');
   const [hasNewUnseenMessage, setHasNewUnseenMessage] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const emojiPickerRef = useRef(null);
+
+  // Close emoji picker on click/tap outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (emojiPickerRef.current && !emojiPickerRef.current.contains(e.target)) {
+        setShowEmojiPicker(false);
+      }
+    };
+    if (showEmojiPicker) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [showEmojiPicker]);
 
   const messagesEndRef = useRef(null);
   const messagesContainerRef = useRef(null);
@@ -90,7 +108,6 @@ export default function LiveChatPage() {
   // Reliable container-scoped scrolling that NEVER touches the browser window scroll
   const scrollToBottom = (smooth = true) => {
     const container = messagesContainerRef.current;
-    const end = messagesEndRef.current;
     if (!container) return;
 
     const doScroll = () => {
@@ -101,16 +118,6 @@ export default function LiveChatPage() {
         });
       } catch (_) {
         container.scrollTop = container.scrollHeight;
-      }
-
-      if (end) {
-        try {
-          end.scrollIntoView({
-            behavior: smooth ? 'smooth' : 'auto',
-            block: 'end',
-            inline: 'nearest'
-          });
-        } catch (_) {}
       }
     };
 
@@ -1027,18 +1034,58 @@ export default function LiveChatPage() {
                       {/* Main Text Input & Actions Form */}
                       <form
                         onSubmit={handleSendMessage}
-                        className="flex items-center gap-1.5 sm:gap-2"
+                        className="flex items-center gap-1.5 sm:gap-2 relative"
                       >
                         {/* Paperclip Document/File Attachment Button */}
                         <button
                           type="button"
                           onClick={() => fileInputRef.current?.click()}
                           disabled={sending}
-                          className="p-2.5 sm:p-3 min-w-[42px] min-h-[42px] rounded-2xl border border-[#E5EAE7] dark:border-slate-800 hover:border-[#07866D]/50 bg-white dark:bg-slate-900 text-[#24364B] dark:text-slate-300 hover:text-[#07866D] dark:hover:text-emerald-400 hover:bg-[#EAF6EF] transition-all cursor-pointer active:scale-95 shrink-0 flex items-center justify-center shadow-xs"
+                          className="p-2 sm:p-3 min-w-[38px] sm:min-w-[42px] min-h-[38px] sm:min-h-[42px] rounded-2xl border border-[#E5EAE7] dark:border-slate-800 hover:border-[#07866D]/50 bg-white dark:bg-slate-900 text-[#24364B] dark:text-slate-300 hover:text-[#07866D] dark:hover:text-emerald-400 hover:bg-[#EAF6EF] transition-all cursor-pointer active:scale-95 shrink-0 flex items-center justify-center shadow-xs"
                           title="Share document, PDF, assignment, or image"
                         >
                           <Paperclip className="w-4 h-4" />
                         </button>
+
+                        {/* Emoji Button & Quick Emoji Palette */}
+                        <div className="relative shrink-0" ref={emojiPickerRef}>
+                          <button
+                            type="button"
+                            onClick={() => setShowEmojiPicker((prev) => !prev)}
+                            disabled={sending}
+                            className={`p-2 sm:p-3 min-w-[38px] sm:min-w-[42px] min-h-[38px] sm:min-h-[42px] rounded-2xl border transition-all cursor-pointer active:scale-95 shrink-0 flex items-center justify-center shadow-xs ${
+                              showEmojiPicker
+                                ? 'border-[#07866D] bg-[#EAF6EF] dark:bg-emerald-950/40 text-[#07866D] dark:text-emerald-400'
+                                : 'border-[#E5EAE7] dark:border-slate-800 hover:border-[#07866D]/50 bg-white dark:bg-slate-900 text-[#24364B] dark:text-slate-300 hover:text-[#07866D] dark:hover:text-emerald-400 hover:bg-[#EAF6EF]'
+                            }`}
+                            title="Insert emoji"
+                          >
+                            <Smile className="w-4 h-4" />
+                          </button>
+
+                          {showEmojiPicker && (
+                            <div className="absolute bottom-full mb-2 left-0 sm:left-auto z-40 p-2.5 rounded-2xl bg-white dark:bg-[#111A2E] border border-slate-200 dark:border-slate-800 shadow-2xl grid grid-cols-6 gap-1.5 w-60 animate-in fade-in zoom-in-95 duration-150">
+                              {[
+                                '😊', '👍', '🤝', '🎉', '💡', '🔥',
+                                '🇵🇰', '👏', '🙏', '❤️', '🚀', '⭐',
+                                '📚', '🎯', '✨', '👋', '💯', '✅'
+                              ].map((emoji, idx) => (
+                                <button
+                                  key={idx}
+                                  type="button"
+                                  onClick={() => {
+                                    setInputText((prev) => prev + emoji);
+                                    setShowEmojiPicker(false);
+                                    inputRef.current?.focus();
+                                  }}
+                                  className="w-8 h-8 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/80 flex items-center justify-center text-lg active:scale-90 transition-all cursor-pointer select-none"
+                                >
+                                  {emoji}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
 
                         <div className="flex-1 relative flex items-center min-w-0">
                           <input
@@ -1050,7 +1097,6 @@ export default function LiveChatPage() {
                               shouldScrollToBottomRef.current = true;
                               scrollToBottom(false);
                               setTimeout(() => scrollToBottom(true), 150);
-                              setTimeout(() => scrollToBottom(true), 350);
                             }}
                             onKeyDown={(e) => {
                               if (e.key === 'Enter' && !e.shiftKey) {
@@ -1063,7 +1109,7 @@ export default function LiveChatPage() {
                                 ? `Add note or caption...`
                                 : `Type message to ${otherParticipant?.name?.split(' ')[0] || 'partner'}...`
                             }
-                            className="w-full pl-3 sm:pl-4 pr-8 sm:pr-10 py-2.5 sm:py-3 bg-white dark:bg-slate-900 border border-[#E5EAE7] dark:border-slate-800 focus:border-[#07866D] focus:ring-2 focus:ring-[#07866D]/20 rounded-2xl text-xs sm:text-sm text-[#24364B] dark:text-white outline-none transition-all font-medium placeholder:text-[#708096]"
+                            className="chat-input message-input w-full pl-3 sm:pl-4 pr-8 sm:pr-10 py-2.5 sm:py-3 bg-white dark:bg-slate-900 border border-[#E5EAE7] dark:border-slate-800 focus:border-[#07866D] focus:ring-2 focus:ring-[#07866D]/20 rounded-2xl text-[16px] md:text-sm text-[#24364B] dark:text-white outline-none transition-all font-medium placeholder:text-[#708096]"
                           />
 
                           {inputText && (
