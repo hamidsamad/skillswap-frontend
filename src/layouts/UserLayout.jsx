@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Outlet, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import NotificationToastContainer from '../components/NotificationToastContainer';
+import PageLoader from '../components/PageLoader';
 
 /**
  * UserLayout: Dedicated layout strictly for normal users & marketplace visitors.
@@ -24,7 +25,9 @@ export default function UserLayout() {
       <Navbar />
       <NotificationToastContainer />
       <main className="flex-1 relative z-10">
-        <Outlet />
+        <Suspense fallback={<PageLoader />}>
+          <Outlet />
+        </Suspense>
       </main>
       <Footer />
     </div>

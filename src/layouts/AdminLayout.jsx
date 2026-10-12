@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { Outlet, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -23,6 +23,7 @@ import {
 import UserAvatar from '../components/UserAvatar';
 import SkillExchangeLogo from '../components/SkillExchangeLogo';
 import NotificationToastContainer from '../components/NotificationToastContainer';
+import PageLoader from '../components/PageLoader';
 
 /**
  * AdminLayout: Dedicated, fully isolated layout strictly for authorized administrators.
@@ -247,7 +248,9 @@ export default function AdminLayout() {
       {/* Admin Content Area: Contains ONLY main page content */}
       <NotificationToastContainer />
       <main className="flex-1 relative z-10">
-        <Outlet />
+        <Suspense fallback={<PageLoader />}>
+          <Outlet />
+        </Suspense>
       </main>
     </div>
   );

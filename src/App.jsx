@@ -1,30 +1,31 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 
 // Layouts
 import UserLayout from './layouts/UserLayout';
 import AdminLayout from './layouts/AdminLayout';
 
-// Route Guards
+// Route Guards & Fallback
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminProtectedRoute from './components/AdminProtectedRoute';
+import PageLoader from './components/PageLoader';
 
-// Public & Auth Pages
-import LoginPage from './pages/LoginPage';
-import AdminLoginPage from './pages/AdminLoginPage';
-import RegisterPage from './pages/RegisterPage';
+// Lazy-Loaded Public & Auth Pages
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const AdminLoginPage = lazy(() => import('./pages/AdminLoginPage'));
+const RegisterPage = lazy(() => import('./pages/RegisterPage'));
 
-// User Panel Pages
-import HomePage from './pages/HomePage';
-import MatchFinderPage from './pages/MatchFinderPage';
-import SkillsDirectoryPage from './pages/SkillsDirectoryPage';
-import SwapAgreementsPage from './pages/SwapAgreementsPage';
-import LiveChatPage from './pages/LiveChatPage';
-import ProfilePage from './pages/ProfilePage';
-import DeleteAccountPage from './pages/DeleteAccountPage';
+// Lazy-Loaded User Panel Pages
+const HomePage = lazy(() => import('./pages/HomePage'));
+const MatchFinderPage = lazy(() => import('./pages/MatchFinderPage'));
+const SkillsDirectoryPage = lazy(() => import('./pages/SkillsDirectoryPage'));
+const SwapAgreementsPage = lazy(() => import('./pages/SwapAgreementsPage'));
+const LiveChatPage = lazy(() => import('./pages/LiveChatPage'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const DeleteAccountPage = lazy(() => import('./pages/DeleteAccountPage'));
 
-// Admin Panel Pages
-import AdminDashboardPage from './pages/AdminDashboardPage';
+// Lazy-Loaded Admin Panel Pages
+const AdminDashboardPage = lazy(() => import('./pages/AdminDashboardPage'));
 
 /**
  * App: Top-level routing architecture strictly separating the User Panel and Admin Panel.
@@ -34,7 +35,8 @@ import AdminDashboardPage from './pages/AdminDashboardPage';
  */
 export default function App() {
   return (
-    <Routes>
+    <Suspense fallback={<PageLoader />}>
+      <Routes>
       {/* ======================================================== */}
       {/* 1. PUBLIC AUTHENTICATION ROUTES                         */}
       {/* ======================================================== */}
@@ -104,5 +106,6 @@ export default function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
+    </Suspense>
   );
 }
