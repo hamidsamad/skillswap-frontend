@@ -1,0 +1,246 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-[#FAF9F5] text-[#24364B] dark:bg-[#080B14] dark:text-slate-100 transition-colors duration-200 antialiased selection:bg-[#07866D] selection:text-white;
+    font-family: 'Plus Jakarta Sans', Inter, system-ui, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
+    letter-spacing: -0.02em;
+    @apply text-[#102B50] dark:text-white;
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
+  }
+  .font-hand {
+    font-family: 'Caveat', cursive;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .touch-scroll {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Button & Card Design System (SkillSwap PK Master Spec) */
+.btn-emerald {
+  @apply bg-[#07866D] hover:bg-[#086B57] text-white rounded-xl px-5 py-2.5 font-bold text-sm shadow-sm hover:shadow transition-all duration-200 active:scale-95 inline-flex items-center justify-center gap-2 cursor-pointer;
+}
+
+.btn-navy {
+  @apply bg-[#102B50] hover:bg-[#183A60] text-white rounded-xl px-5 py-2.5 font-bold text-sm shadow-sm hover:shadow transition-all duration-200 active:scale-95 inline-flex items-center justify-center gap-2 cursor-pointer;
+}
+
+.btn-white {
+  @apply bg-white hover:bg-[#F1F8F2] text-[#102B50] dark:bg-[#131B2E] dark:hover:bg-[#1E293B] dark:text-slate-100 dark:border-slate-700 border border-[#E5EAE7] rounded-xl px-5 py-2.5 font-bold text-sm transition-all duration-200 active:scale-95 shadow-xs hover:shadow-sm inline-flex items-center justify-center gap-2 cursor-pointer;
+}
+
+.btn-outline-emerald {
+  @apply bg-white hover:bg-[#EAF6EF] text-[#07866D] dark:bg-[#0E1526] dark:hover:bg-emerald-950/50 dark:text-emerald-400 dark:border-emerald-700/50 border border-[#07866D]/30 rounded-xl px-5 py-2.5 font-bold text-sm transition-all duration-200 active:scale-95 inline-flex items-center justify-center gap-2 cursor-pointer;
+}
+
+.card-clean {
+  @apply bg-white dark:bg-[#0E1526] rounded-2xl border border-[#E5EAE7] dark:border-slate-800 shadow-[0_2px_14px_-2px_rgba(16,43,80,0.05)] dark:shadow-black/20 transition-all duration-200;
+}
+
+.panel-mint {
+  @apply bg-[#EAF6EF] dark:bg-emerald-950/40 border border-[#07866D]/20 dark:border-emerald-800/40 rounded-xl p-3;
+}
+
+.panel-blue {
+  @apply bg-[#EEF6FC] dark:bg-sky-950/40 border border-[#183A60]/15 dark:border-sky-800/40 rounded-xl p-3;
+}
+
+/* Category Pills from Reference Design */
+.cat-pill {
+  @apply px-4 py-2 rounded-full text-xs font-bold transition-all duration-200 inline-flex items-center gap-2 active:scale-95 cursor-pointer shadow-sm select-none shrink-0;
+}
+.cat-pill-all {
+  @apply bg-[#0B132A] text-white hover:bg-[#162244] dark:bg-slate-800 dark:hover:bg-slate-700;
+}
+.cat-pill-prog {
+  @apply bg-[#EDE9FE] text-[#6D28D9] hover:bg-[#DDD6FE] dark:bg-purple-950/40 dark:text-purple-300 dark:hover:bg-purple-900/40;
+}
+.cat-pill-design {
+  @apply bg-[#FCE7F3] text-[#BE185D] hover:bg-[#FBCFE8] dark:bg-pink-950/40 dark:text-pink-300 dark:hover:bg-pink-900/40;
+}
+.cat-pill-marketing {
+  @apply bg-[#D1FAE5] text-[#047857] hover:bg-[#A7F3D0] dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-900/40;
+}
+.cat-pill-languages {
+  @apply bg-[#E0F2FE] text-[#0369A1] hover:bg-[#BAE6FD] dark:bg-sky-950/40 dark:text-sky-300 dark:hover:bg-sky-900/40;
+}
+.cat-pill-music {
+  @apply bg-[#FEF3C7] text-[#B45309] hover:bg-[#FDE68A] dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-900/40;
+}
+.cat-pill-video {
+  @apply bg-[#EDE9FE] text-[#7C3AED] hover:bg-[#DDD6FE] dark:bg-violet-950/40 dark:text-violet-300 dark:hover:bg-violet-900/40;
+}
+.cat-pill-fitness {
+  @apply bg-[#CCFBF1] text-[#0F766E] hover:bg-[#99F6E4] dark:bg-teal-950/40 dark:text-teal-300 dark:hover:bg-teal-900/40;
+}
+.cat-pill-business {
+  @apply bg-[#E0E7FF] text-[#4338CA] hover:bg-[#C7D2FE] dark:bg-indigo-950/40 dark:text-indigo-300 dark:hover:bg-indigo-900/40;
+}
+
+/* Ambient Modern Background & Grid Texture */
+.ambient-mesh {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: 
+    radial-gradient(circle at 10% 10%, rgba(7, 134, 109, 0.03) 0%, transparent 40%),
+    radial-gradient(circle at 90% 20%, rgba(16, 43, 80, 0.02) 0%, transparent 40%),
+    radial-gradient(circle at 50% 90%, rgba(7, 134, 109, 0.02) 0%, transparent 50%);
+}
+
+/* Subtly textured background grid for high-end SaaS feel */
+.bg-grid-pattern {
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, rgba(148, 163, 184, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(148, 163, 184, 0.05) 1px, transparent 1px);
+}
+
+.dark .bg-grid-pattern {
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
+/* Refined Glassmorphism & Visual Panels */
+.glass-panel {
+  @apply bg-white/85 dark:bg-[#0D1424]/85 backdrop-blur-xl border border-slate-200/90 dark:border-slate-800/80 shadow-xl shadow-slate-900/5 dark:shadow-black/40;
+}
+
+.glass-card {
+  @apply bg-white/90 dark:bg-[#111A2E]/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-800/80 shadow-md shadow-slate-900/5 dark:shadow-black/20 hover:shadow-xl hover:shadow-sky-500/5 dark:hover:shadow-sky-500/10 hover:border-sky-500/40 dark:hover:border-sky-500/40 transition-all duration-300;
+}
+
+.glass-card-interactive {
+  @apply glass-card hover:-translate-y-1 cursor-pointer;
+}
+
+/* Pakistan Flag Accent Gradient & Text Gradients */
+.pakistan-gradient {
+  background: linear-gradient(135deg, #0284C7 0%, #0F766E 50%, #10B981 100%);
+}
+
+.pakistan-gradient-hover:hover {
+  background: linear-gradient(135deg, #0369A1 0%, #0D9488 50%, #059669 100%);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, #0284C7 0%, #10B981 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-purple {
+  background: linear-gradient(135deg, #8B5CF6 0%, #3B82F6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-gold {
+  background: linear-gradient(135deg, #F59E0B 0%, #EAB308 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Glow Pill Badge */
+.glow-badge {
+  @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border backdrop-blur-sm transition-all;
+}
+
+/* Primary Button Glow Effect */
+.btn-primary-glow {
+  @apply relative inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-white font-bold text-xs sm:text-sm bg-gradient-to-r from-sky-600 via-teal-600 to-emerald-600 hover:from-sky-500 hover:via-teal-500 hover:to-emerald-500 shadow-lg shadow-sky-600/20 hover:shadow-sky-600/35 active:scale-95 transition-all duration-200 cursor-pointer;
+}
+
+/* Subtle Glowing borders on hover */
+.glow-border {
+  position: relative;
+}
+.glow-border::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  background: linear-gradient(90deg, #0284C7, #10B981, #0284C7);
+  border-radius: inherit;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.glow-border:hover::after {
+  opacity: 0.6;
+}
+
+/* Custom sleek modern scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-300/80 dark:bg-slate-700/80 rounded-full hover:bg-slate-400 dark:hover:bg-slate-600 transition-colors;
+}
+
+/* Color Scheme & Browser Native Controls */
+:root {
+  color-scheme: light;
+}
+.dark {
+  color-scheme: dark;
+}
+
+/* Chrome, Safari, Edge browser autofill reset */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-text-fill-color: #0F243B !important;
+  caret-color: #0F243B !important;
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+  box-shadow: 0 0 0 1000px #ffffff inset !important;
+  transition: background-color 5000000s ease-in-out 0s, color 5000000s ease-in-out 0s !important;
+}
+
+.dark input:-webkit-autofill,
+.dark input:-webkit-autofill:hover, 
+.dark input:-webkit-autofill:focus, 
+.dark input:-webkit-autofill:active,
+.dark textarea:-webkit-autofill,
+.dark select:-webkit-autofill {
+  -webkit-text-fill-color: #ffffff !important;
+  caret-color: #ffffff !important;
+  -webkit-box-shadow: 0 0 0 1000px #131B2E inset !important;
+  box-shadow: 0 0 0 1000px #131B2E inset !important;
+  transition: background-color 5000000s ease-in-out 0s, color 5000000s ease-in-out 0s !important;
+}
+
+/* For inputs nested in darker card backgrounds (e.g., slate-900 or modals) */
+.dark .bg-slate-900 input:-webkit-autofill,
+.dark input.bg-slate-900:-webkit-autofill,
+.dark .dark\:bg-slate-900:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px #0f172a inset !important;
+  box-shadow: 0 0 0 1000px #0f172a inset !important;
+}
+
