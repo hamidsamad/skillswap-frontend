@@ -45,10 +45,12 @@ export default function VoiceRecorderBar({
   const timerIntervalRef = useRef(null);
   const audioChunksRef = useRef([]);
   const previewAudioRef = useRef(null);
+  const startTimeRef = useRef(0);
+  const recordingTimeRef = useRef(0);
 
   // Format seconds into MM:SS
   const formatTime = (secs) => {
-    if (!secs || isNaN(secs) || secs < 0) return '0:00';
+    if (!secs || isNaN(secs) || secs < 0 || !Number.isFinite(secs)) return '0:00';
     const m = Math.floor(secs / 60);
     const s = Math.floor(secs % 60);
     return `${m}:${s < 10 ? '0' : ''}${s}`;
@@ -92,6 +94,18 @@ export default function VoiceRecorderBar({
     setAudioBlob(null);
     setAudioDuration(0);
     setRecordingTime(0);
+    recordingTimeRef.current = 0;
+
+    // Check secure context requirement for microphone access
+    if (
+      typeof window !== 'undefined' &&
+      !window.isSecureContext &&
+      window.location.hostname !== 'localhost' &&
+      window.location.hostname !== '127.0.0.1'
+    ) {
+      setPermissionError('Microphone access requires a secure HTTPS connection in this browser.');
+      return;
+    }
 
     // Validate browser support for MediaRecorder
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || typeof MediaRecorder === 'undefined') {
@@ -100,21 +114,35 @@ export default function VoiceRecorderBar({
     }
 
     try {
-      // 1. Request microphone permission
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // 1. Request microphone permission with high-quality constraints
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        }
+      });
       audioStreamRef.current = stream;
 
-      // 2. Select supported MIME type
-      let mimeType = 'audio/webm';
-      if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
-        mimeType = 'audio/webm;codecs=opus';
-      } else if (MediaRecorder.isTypeSupported('audio/ogg;codecs=opus')) {
-        mimeType = 'audio/ogg;codecs=opus';
-      } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
-        mimeType = 'audio/mp4';
+      // 2. Select supported MIME type safely without hardcoded crash
+      const candidateTypes = [
+        'audio/webm;codecs=opus',
+        'audio/webm',
+        'audio/mp4',
+        'audio/aac',
+        'audio/ogg;codecs=opus',
+        'audio/ogg'
+      ];
+
+      let selectedMime = '';
+      if (typeof MediaRecorder.isTypeSupported === 'function') {
+        selectedMime = candidateTypes.find((t) => MediaRecorder.isTypeSupported(t)) || '';
       }
 
-      const recorder = new MediaRecorder(stream, { mimeType });
+      const recorderOptions = selectedMime ? { mimeType: selectedMime } : {};
+      const recorder = new MediaRecorder(stream, recorderOptions);
+      const recordedMime = recorder.mimeType || selectedMime || 'audio/webm';
+
       mediaRecorderRef.current = recorder;
       audioChunksRef.current = [];
 
@@ -125,21 +153,26 @@ export default function VoiceRecorderBar({
       };
 
       recorder.onstop = () => {
-        const finalBlob = new Blob(audioChunksRef.current, { type: mimeType });
+        const finalBlob = new Blob(audioChunksRef.current, { type: recordedMime });
         const finalUrl = URL.createObjectURL(finalBlob);
+        const finalDuration = recordingTimeRef.current > 0
+          ? recordingTimeRef.current
+          : Math.max(1, Math.round((Date.now() - (startTimeRef.current || Date.now())) / 1000));
+
         setAudioBlob(finalBlob);
         setAudioUrl(finalUrl);
-        setAudioDuration(recordingTime > 0 ? recordingTime : 1);
+        setAudioDuration(finalDuration);
         setIsRecording(false);
       };
 
+      startTimeRef.current = Date.now();
       recorder.start(250); // collect chunks every 250ms
       setIsRecording(true);
 
-      // Start timer
-      const startTime = Date.now();
+      // Start timer tracking exact seconds with ref
       timerIntervalRef.current = setInterval(() => {
-        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        const elapsed = Math.max(1, Math.floor((Date.now() - startTimeRef.current) / 1000));
+        recordingTimeRef.current = elapsed;
         setRecordingTime(elapsed);
       }, 500);
 
@@ -178,6 +211,7 @@ export default function VoiceRecorderBar({
     cleanupRecording();
     setIsRecording(false);
     setRecordingTime(0);
+    recordingTimeRef.current = 0;
     if (audioUrl) {
       URL.revokeObjectURL(audioUrl);
       setAudioUrl(null);
@@ -195,6 +229,9 @@ export default function VoiceRecorderBar({
       audio.pause();
       setIsPreviewPlaying(false);
     } else {
+      if (audio.ended) {
+        audio.currentTime = 0;
+      }
       audio.play().then(() => {
         setIsPreviewPlaying(true);
       }).catch(console.warn);
@@ -208,14 +245,15 @@ export default function VoiceRecorderBar({
     setPermissionError('');
 
     try {
-      // Convert Blob to Base64 Data URL for Cloudinary upload
+      // Convert Blob to Base64 Data URL for upload
       const reader = new FileReader();
       reader.onloadend = async () => {
         const base64Audio = reader.result;
         try {
+          const finalDur = audioDuration || recordingTimeRef.current || 1;
           await onSendVoice({
             audioDataUrl: base64Audio,
-            duration: audioDuration || recordingTime || 1
+            duration: finalDur
           });
           // Reset after send
           cancelRecording();

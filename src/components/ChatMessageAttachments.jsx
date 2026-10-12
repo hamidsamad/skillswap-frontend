@@ -12,6 +12,7 @@ import {
   FileCheck2,
   Image as ImageIcon
 } from 'lucide-react';
+import { resolveMediaUrl } from '../utils/mediaUrl';
 
 // Format bytes into human-readable size
 export function formatFileSize(bytes) {
@@ -109,7 +110,7 @@ export default function ChatMessageAttachments({ attachments, isMe = false }) {
       {attachments.map((att, idx) => {
         const fileInfo = getFileInfo(att.name, att.fileType);
         const isImage = fileInfo.type === 'image';
-        const fileUrl = att.url || '#';
+        const fileUrl = resolveMediaUrl(att.url) || '#';
         const fileName = att.name || 'Shared Document';
         const sizeStr = formatFileSize(att.fileSize);
 

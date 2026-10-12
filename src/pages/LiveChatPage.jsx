@@ -386,19 +386,31 @@ export default function LiveChatPage() {
     setSending(true);
 
     try {
-      // 1. Upload audio to Cloudinary / storage endpoint
-      const uploadRes = await api.post('/chat/upload-voice', {
-        audio: audioDataUrl,
-        duration
-      });
+      // 1. Upload audio to storage endpoint (Cloudinary or backend storage)
+      let voiceUrl = '';
+      let voiceDuration = duration;
 
-      if (!uploadRes.data.success || !uploadRes.data.voiceUrl) {
-        throw new Error(uploadRes.data.message || 'Voice upload failed');
+      try {
+        const uploadRes = await api.post('/chat/upload-voice', {
+          audio: audioDataUrl,
+          duration
+        });
+
+        if (uploadRes.data?.success && uploadRes.data?.voiceUrl) {
+          voiceUrl = uploadRes.data.voiceUrl;
+          voiceDuration = uploadRes.data.voiceDuration || duration;
+        }
+      } catch (uploadErr) {
+        console.warn('Voice upload endpoint warning, using client audio fallback:', uploadErr);
+        // If upload endpoint is slow or fails, audioDataUrl ensures the voice note is not lost
+        voiceUrl = audioDataUrl;
       }
 
-      const { voiceUrl, voiceDuration } = uploadRes.data;
+      if (!voiceUrl) {
+        voiceUrl = audioDataUrl;
+      }
 
-      // 2. Post voice message
+      // 2. Post voice message to conversation
       const res = await api.post(`/chat/conversations/${activeConvId}/messages`, {
         content: '🎤 Voice message',
         messageType: 'voice',
