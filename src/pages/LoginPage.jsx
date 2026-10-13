@@ -66,18 +66,18 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-80px)] flex items-center justify-center px-3 xs:px-4 sm:px-6 lg:px-8 py-6 sm:py-12 bg-[#F6F8F6]/80 dark:bg-[#080B14] transition-colors duration-200">
+    <div className="min-h-[calc(100vh-80px)] flex items-center justify-center px-3 xs:px-4 sm:px-6 lg:px-8 py-6 sm:py-12 bg-[#FAF9F5] dark:bg-[#080B14] transition-colors duration-200">
       {/* Central Split-Screen Card Matching Reference Image */}
-      <div className="w-full max-w-[960px] bg-white dark:bg-[#0E1526] rounded-2xl xs:rounded-3xl md:rounded-[32px] border border-[#EAEFEA] dark:border-slate-800 shadow-[0_20px_60px_-15px_rgba(15,36,59,0.07)] overflow-hidden grid grid-cols-1 lg:grid-cols-12 transition-all">
+      <div className="w-full max-w-[960px] bg-white dark:bg-[#0E1526] rounded-2xl xs:rounded-3xl md:rounded-[32px] border border-[#E5EAE7] dark:border-slate-800 shadow-[0_20px_60px_-15px_rgba(16,43,80,0.06)] overflow-hidden grid grid-cols-1 lg:grid-cols-12 transition-all">
         
         {/* ========================================================= */}
         {/* LEFT COLUMN: SkillSwap PK Branding & Visual Showcase      */}
         {/* ========================================================= */}
-        <div className="lg:col-span-5 p-4 xs:p-6 sm:p-8 md:p-9 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-[#EAEFEA] dark:border-slate-800 bg-[#FAFCFA]/60 dark:bg-[#0A0F1D]/80">
+        <div className="lg:col-span-5 p-4 xs:p-6 sm:p-8 md:p-9 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-[#E5EAE7] dark:border-slate-800 bg-[#FAF9F5]/70 dark:bg-[#0A0F1D]/80">
           <div className="space-y-4 sm:space-y-5">
             {/* 1. SkillSwap PK Logo Header */}
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#0F243B] dark:bg-slate-800 p-2 flex items-center justify-center shadow-xs shrink-0">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#102B50] dark:bg-slate-800 p-2 flex items-center justify-center shadow-xs shrink-0">
                 <img
                   src="/skillswap-icon.png"
                   alt="SkillSwap Logo"
@@ -86,14 +86,14 @@ export default function LoginPage() {
               </div>
               <div className="leading-tight">
                 <div className="flex items-center gap-1.5">
-                  <span className="font-extrabold text-lg sm:text-[22px] text-[#0F243B] dark:text-white tracking-tight font-display">
+                  <span className="font-extrabold text-lg sm:text-[22px] text-[#102B50] dark:text-white tracking-tight font-display">
                     SkillSwap
                   </span>
-                  <span className="bg-[#D8EFE4] dark:bg-emerald-950/60 text-[#0E7057] dark:text-emerald-400 text-[11px] font-bold px-1.5 py-0.5 rounded-md leading-none border border-transparent dark:border-emerald-800/40">
+                  <span className="bg-[#D8EFE4] dark:bg-emerald-950/60 text-[#07866D] dark:text-emerald-400 text-[11px] font-bold px-1.5 py-0.5 rounded-md leading-none border border-transparent dark:border-emerald-800/40">
                     PK
                   </span>
                 </div>
-                <div className="text-[10px] font-bold tracking-widest text-[#64748B] dark:text-slate-400 uppercase mt-0.5">
+                <div className="text-[10px] font-bold tracking-widest text-[#708096] dark:text-slate-400 uppercase mt-0.5">
                   SKILL EXCHANGE
                 </div>
               </div>
@@ -101,7 +101,7 @@ export default function LoginPage() {
 
             {/* 2. Pakistan's 1st Skill Exchange Platform Badge */}
             <div>
-              <div className="inline-flex items-center gap-1.5 xs:gap-2 px-2.5 xs:px-3 py-1 rounded-full bg-[#EDF7F2] dark:bg-emerald-950/40 border border-[#D5EAE0] dark:border-emerald-800/40 text-[#0D634C] dark:text-emerald-400 text-[10px] xs:text-[11px] sm:text-xs font-semibold shadow-xs">
+              <div className="inline-flex items-center gap-1.5 xs:gap-2 px-2.5 xs:px-3 py-1 rounded-full bg-[#EAF6EF] dark:bg-emerald-950/40 border border-[#07866D]/20 dark:border-emerald-800/40 text-[#07866D] dark:text-emerald-400 text-[10px] xs:text-[11px] sm:text-xs font-semibold shadow-xs">
                 {/* Crisp Vector Pakistan Flag */}
                 <svg className="w-4 h-2.5 rounded-[2px] shrink-0 shadow-2xs" viewBox="0 0 300 200">
                   <rect width="300" height="200" fill="#01411C" />
@@ -114,7 +114,7 @@ export default function LoginPage() {
                   />
                 </svg>
                 <span>Pakistan's 1st Skill Exchange Platform</span>
-                <Info className="w-3.5 h-3.5 text-[#0D634C]/70 dark:text-emerald-400/70 shrink-0" />
+                <Info className="w-3.5 h-3.5 text-[#07866D]/70 dark:text-emerald-400/70 shrink-0" />
               </div>
             </div>
 
@@ -201,24 +201,24 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => {}}
-                className="px-3 py-1 rounded-full border border-[#0E7057] dark:border-emerald-500 text-[#0E7057] dark:text-emerald-400 text-xs font-bold hover:bg-[#EDF7F2] dark:hover:bg-emerald-950/40 transition-colors"
+                className="px-3 py-1 rounded-full border border-[#07866D] dark:border-emerald-500 text-[#07866D] dark:text-emerald-400 text-xs font-bold hover:bg-[#EAF6EF] dark:hover:bg-emerald-950/40 transition-colors cursor-pointer"
               >
                 Sign In
               </button>
             </div>
 
             {/* 2. Top Tabs: Sign In (Active) vs Register */}
-            <div className="flex items-center gap-8 border-b border-[#EAEFEA] dark:border-slate-800 mb-5">
+            <div className="flex items-center gap-8 border-b border-[#E5EAE7] dark:border-slate-800 mb-5">
               <button
                 type="button"
-                className="relative pb-2.5 text-sm font-bold text-[#0F243B] dark:text-white transition-colors"
+                className="relative pb-2.5 text-sm font-bold text-[#102B50] dark:text-white transition-colors cursor-pointer"
               >
                 Sign In
-                <span className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-[#0E7057] rounded-full" />
+                <span className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-[#07866D] rounded-full" />
               </button>
               <Link
                 to="/register"
-                className="pb-2.5 text-sm font-semibold text-[#708096] dark:text-slate-400 hover:text-[#0F243B] dark:hover:text-white transition-colors"
+                className="pb-2.5 text-sm font-semibold text-[#708096] dark:text-slate-400 hover:text-[#102B50] dark:hover:text-white transition-colors cursor-pointer"
               >
                 Register
               </Link>
@@ -226,7 +226,7 @@ export default function LoginPage() {
 
             {/* 3. Section Title & Subtitle */}
             <div className="mb-5">
-              <h2 className="text-xl sm:text-2xl font-bold text-[#0F243B] dark:text-white font-display">
+              <h2 className="text-xl sm:text-2xl font-bold text-[#102B50] dark:text-white font-display">
                 Sign In to Your Account
               </h2>
               <p className="text-xs text-[#708096] dark:text-slate-400 mt-1">
@@ -236,7 +236,7 @@ export default function LoginPage() {
 
             {/* Success & Error Banners */}
             {successBanner && (
-              <div className="mb-4 p-3 bg-[#EDF7F2] dark:bg-emerald-950/40 border border-[#0E7057]/30 dark:border-emerald-800/40 rounded-xl flex items-center gap-2.5 text-xs font-semibold text-[#0E7057] dark:text-emerald-400">
+              <div className="mb-4 p-3 bg-[#EAF6EF] dark:bg-emerald-950/40 border border-[#07866D]/30 dark:border-emerald-800/40 rounded-xl flex items-center gap-2.5 text-xs font-semibold text-[#07866D] dark:text-emerald-400">
                 <CheckCircle2 className="w-4 h-4 shrink-0" />
                 <span>{successBanner}</span>
               </div>
@@ -252,7 +252,7 @@ export default function LoginPage() {
             {/* 4. Credentials Form */}
             <form onSubmit={handleSubmit} className="space-y-3.5">
               {/* Email Address Field */}
-              <div className="rounded-xl border border-[#E2E8F0] dark:border-slate-700 bg-white dark:bg-[#131B2E] px-3.5 py-2.5 flex items-center gap-3 focus-within:border-[#0E7057] focus-within:ring-2 focus-within:ring-[#0E7057]/15 transition-all">
+              <div className="rounded-xl border border-[#E5EAE7] dark:border-slate-700 bg-white dark:bg-[#131B2E] px-3.5 py-2.5 flex items-center gap-3 focus-within:border-[#07866D] focus-within:ring-2 focus-within:ring-[#07866D]/15 transition-all">
                 <div className="p-1 rounded-md text-[#708096] dark:text-slate-400 shrink-0">
                   <Mail className="w-4 h-4" />
                 </div>
@@ -267,13 +267,13 @@ export default function LoginPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"
                     autoComplete="email"
-                    className="w-full text-xs sm:text-sm text-[#0F243B] dark:text-white placeholder-[#94A3B8] dark:placeholder-slate-500 font-medium outline-none bg-transparent p-0 leading-tight"
+                    className="w-full text-xs sm:text-sm text-[#102B50] dark:text-white placeholder-[#94A3B8] dark:placeholder-slate-500 font-medium outline-none bg-transparent p-0 leading-tight"
                   />
                 </div>
               </div>
 
               {/* Password Field */}
-              <div className="rounded-xl border border-[#E2E8F0] dark:border-slate-700 bg-white dark:bg-[#131B2E] px-3.5 py-2.5 flex items-center gap-3 focus-within:border-[#0E7057] focus-within:ring-2 focus-within:ring-[#0E7057]/15 transition-all">
+              <div className="rounded-xl border border-[#E5EAE7] dark:border-slate-700 bg-white dark:bg-[#131B2E] px-3.5 py-2.5 flex items-center gap-3 focus-within:border-[#07866D] focus-within:ring-2 focus-within:ring-[#07866D]/15 transition-all">
                 <div className="p-1 rounded-md text-[#708096] dark:text-slate-400 shrink-0">
                   <Lock className="w-4 h-4" />
                 </div>
@@ -288,13 +288,13 @@ export default function LoginPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
                     autoComplete="current-password"
-                    className="w-full text-xs sm:text-sm text-[#0F243B] dark:text-white placeholder-[#94A3B8] dark:placeholder-slate-500 font-medium outline-none bg-transparent p-0 leading-tight"
+                    className="w-full text-xs sm:text-sm text-[#102B50] dark:text-white placeholder-[#94A3B8] dark:placeholder-slate-500 font-medium outline-none bg-transparent p-0 leading-tight"
                   />
                 </div>
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="text-[#94A3B8] dark:text-slate-400 hover:text-[#0F243B] dark:hover:text-white transition-colors p-1"
+                  className="text-[#94A3B8] dark:text-slate-400 hover:text-[#102B50] dark:hover:text-white transition-colors p-1 cursor-pointer"
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -310,7 +310,7 @@ export default function LoginPage() {
                     setSuccessBanner('');
                     setShowForgotModal(true);
                   }}
-                  className="text-xs font-semibold text-[#0E7057] dark:text-emerald-400 hover:underline cursor-pointer"
+                  className="text-xs font-semibold text-[#07866D] dark:text-emerald-400 hover:underline cursor-pointer"
                 >
                   Forgot Password?
                 </button>
@@ -320,7 +320,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 rounded-full bg-[#0E7057] hover:bg-[#0A5743] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-sm shadow-[#0E7057]/25 transition-all active:scale-[0.99] cursor-pointer disabled:opacity-75"
+                className="btn-emerald w-full !py-3 !rounded-full !text-sm font-bold shadow-md cursor-pointer disabled:opacity-75"
               >
                 <span>{loading ? 'Signing in...' : 'Sign In'}</span>
                 <ArrowRight className="w-4 h-4" />
@@ -328,18 +328,18 @@ export default function LoginPage() {
             </form>
 
             {/* Bottom "Create a New Account" Section */}
-            <div className="mt-4 pt-3.5 border-t border-[#EAEFEA] dark:border-slate-800 flex items-start gap-2.5">
-              <div className="p-1.5 rounded-lg bg-[#EDF7F2] dark:bg-emerald-950/50 text-[#0E7057] dark:text-emerald-400 shrink-0 mt-0.5">
+            <div className="mt-4 pt-3.5 border-t border-[#E5EAE7] dark:border-slate-800 flex items-start gap-2.5">
+              <div className="p-1.5 rounded-lg bg-[#EAF6EF] dark:bg-emerald-950/50 text-[#07866D] dark:text-emerald-400 shrink-0 mt-0.5">
                 <UserPlus className="w-4 h-4" />
               </div>
               <div className="flex-1">
-                <div className="text-xs font-bold text-[#0F243B] dark:text-white">Create a New Account</div>
+                <div className="text-xs font-bold text-[#102B50] dark:text-white">Create a New Account</div>
                 <p className="text-[11px] text-[#708096] dark:text-slate-400">
                   Join SkillSwap PK and start your learning journey.
                 </p>
                 <Link
                   to="/register"
-                  className="inline-flex items-center gap-1 text-xs font-bold text-[#0E7057] dark:text-emerald-400 hover:underline mt-1 cursor-pointer"
+                  className="inline-flex items-center gap-1 text-xs font-bold text-[#07866D] dark:text-emerald-400 hover:underline mt-1 cursor-pointer"
                 >
                   <span>Create Account</span>
                   <ArrowRight className="w-3.5 h-3.5" />

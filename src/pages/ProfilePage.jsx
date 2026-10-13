@@ -378,7 +378,7 @@ export default function ProfilePage() {
   const displayCity = city || 'Lahore';
 
   return (
-    <div className="min-h-screen bg-[#F7F9F7] dark:bg-[#080B14] py-6 sm:py-8 px-3 sm:px-6 lg:px-8 transition-colors duration-200">
+    <div className="min-h-screen bg-[#FAF9F5] dark:bg-[#080B14] py-6 sm:py-8 px-3 sm:px-6 lg:px-8 transition-colors duration-200">
       {/* Hidden file input for picture upload */}
       <input
         type="file"
@@ -389,23 +389,23 @@ export default function ProfilePage() {
       />
 
       {/* Main Rounded App Card Layout Matching Reference Design */}
-      <div className="max-w-[1240px] mx-auto bg-white dark:bg-[#0E1526] rounded-3xl md:rounded-[32px] border border-[#EAEFEA] dark:border-slate-800 shadow-[0_15px_45px_-12px_rgba(15,36,59,0.06)] overflow-hidden transition-colors">
+      <div className="max-w-[1240px] mx-auto bg-white dark:bg-[#0E1526] rounded-3xl md:rounded-[32px] border border-[#E5EAE7] dark:border-slate-800 shadow-[0_15px_45px_-12px_rgba(16,43,80,0.06)] overflow-hidden transition-colors">
         
         {/* Mobile Header with Hamburger for Sidebar */}
-        <div className="lg:hidden flex items-center justify-between p-3.5 sm:p-4 border-b border-[#EAEFEA] dark:border-slate-800 bg-[#FAFBF9] dark:bg-[#0A0F1D]">
+        <div className="lg:hidden flex items-center justify-between p-3.5 sm:p-4 border-b border-[#E5EAE7] dark:border-slate-800 bg-[#FAF9F5] dark:bg-[#0A0F1D]">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-[#0F243B] dark:bg-slate-800 p-1.5 flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 rounded-full bg-[#102B50] dark:bg-slate-800 p-1.5 flex items-center justify-center shrink-0">
               <img
                 src="/skillswap-icon.png"
                 alt="SkillSwap Logo"
                 className="w-full h-full object-contain filter invert brightness-125"
               />
             </div>
-            <span className="font-extrabold text-base text-[#0F243B] dark:text-white">SkillSwap PK</span>
+            <span className="font-extrabold text-base text-[#102B50] dark:text-white">SkillSwap PK</span>
           </div>
           <button
             onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-            className="p-2 min-w-[42px] min-h-[42px] flex items-center justify-center rounded-xl text-[#0F243B] dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+            className="p-2 min-w-[42px] min-h-[42px] flex items-center justify-center rounded-xl text-[#102B50] dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
             aria-label="Toggle profile navigation menu"
           >
             {mobileSidebarOpen ? <X className="w-5 h-5 text-rose-500" /> : <Menu className="w-5 h-5" />}
@@ -417,11 +417,11 @@ export default function ProfilePage() {
           {/* ========================================================= */}
           {/* LEFT SIDEBAR NAVIGATION (Matching Reference Design)       */}
           {/* ========================================================= */}
-          <aside className={`lg:col-span-3 border-r border-[#EAEFEA] dark:border-slate-800 p-4 sm:p-6 flex flex-col justify-between bg-[#FAFBF9]/80 dark:bg-[#0A0F1D]/90 ${mobileSidebarOpen ? 'block border-b lg:border-b-0' : 'hidden lg:flex'}`}>
+          <aside className={`lg:col-span-3 border-r border-[#E5EAE7] dark:border-slate-800 p-4 sm:p-6 flex flex-col justify-between bg-[#FAF9F5]/80 dark:bg-[#0A0F1D]/90 ${mobileSidebarOpen ? 'block border-b lg:border-b-0' : 'hidden lg:flex'}`}>
             <div className="space-y-6">
               {/* Brand Logo Header */}
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-full bg-[#0F243B] dark:bg-slate-800 p-1.5 flex items-center justify-center shrink-0 shadow-2xs">
+                <div className="w-9 h-9 rounded-full bg-[#102B50] dark:bg-slate-800 p-1.5 flex items-center justify-center shrink-0 shadow-2xs">
                   <img
                     src="/skillswap-icon.png"
                     alt="SkillSwap"
@@ -430,14 +430,14 @@ export default function ProfilePage() {
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <span className="font-extrabold text-lg text-[#0F243B] dark:text-white tracking-tight font-display">
+                    <span className="font-extrabold text-lg text-[#102B50] dark:text-white tracking-tight font-display">
                       SkillSwap
                     </span>
-                    <span className="bg-[#D8EFE4] dark:bg-emerald-950/60 text-[#0E7057] dark:text-emerald-400 text-[10px] font-bold px-1.5 py-0.5 rounded leading-none border border-transparent dark:border-emerald-800/40">
+                    <span className="bg-[#D8EFE4] dark:bg-emerald-950/60 text-[#07866D] dark:text-emerald-400 text-[10px] font-bold px-1.5 py-0.5 rounded leading-none border border-transparent dark:border-emerald-800/40">
                       PK
                     </span>
                   </div>
-                  <div className="text-[9px] font-bold tracking-widest text-[#64748B] dark:text-slate-400 uppercase">
+                  <div className="text-[9px] font-bold tracking-widest text-[#708096] dark:text-slate-400 uppercase">
                     SKILL EXCHANGE
                   </div>
                 </div>
@@ -557,17 +557,17 @@ export default function ProfilePage() {
           <div className="lg:col-span-9 flex flex-col bg-white dark:bg-[#0E1526]">
             
             {/* Top Navigation Bar Matching Reference Image */}
-            <div className="border-b border-[#EAEFEA] dark:border-slate-800 px-3.5 sm:px-6 lg:px-8 py-2.5 sm:py-3.5 flex items-center justify-between gap-2.5 sm:gap-4">
+            <div className="border-b border-[#E5EAE7] dark:border-slate-800 px-3.5 sm:px-6 lg:px-8 py-2.5 sm:py-3.5 flex items-center justify-between gap-2.5 sm:gap-4">
               {/* Search Bar Input */}
               <form onSubmit={handleSearchSubmit} className="flex-1 max-w-[200px] xs:max-w-xs sm:max-w-md">
-                <div className="flex items-center gap-2 px-3 py-1.5 sm:py-2 rounded-full bg-[#F3F6F4] dark:bg-[#131B2E] border border-[#E5ECE7] dark:border-slate-700 focus-within:border-[#0E7057] focus-within:bg-white dark:focus-within:bg-[#18233c] transition-all">
+                <div className="flex items-center gap-2 px-3 py-1.5 sm:py-2 rounded-full bg-[#FAF9F5] dark:bg-[#131B2E] border border-[#E5EAE7] dark:border-slate-700 focus-within:border-[#07866D] focus-within:bg-white dark:focus-within:bg-[#18233c] transition-all">
                   <Search className="w-3.5 h-3.5 text-[#708096] dark:text-slate-400 shrink-0" />
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search skills, people..."
-                    className="w-full text-xs text-[#0F243B] dark:text-white placeholder-[#8C9BAE] dark:placeholder-slate-400 bg-transparent outline-none font-medium"
+                    className="w-full text-xs text-[#102B50] dark:text-white placeholder-[#8C9BAE] dark:placeholder-slate-400 bg-transparent outline-none font-medium"
                   />
                 </div>
               </form>
@@ -586,11 +586,11 @@ export default function ProfilePage() {
                       className="w-7 h-7 rounded-full object-cover border border-[#E5EAE7] dark:border-slate-700"
                     />
                   ) : (
-                    <div className="w-7 h-7 rounded-full bg-[#0E7057] text-white flex items-center justify-center font-bold text-xs">
+                    <div className="w-7 h-7 rounded-full bg-[#07866D] text-white flex items-center justify-center font-bold text-xs">
                       {displayName.charAt(0).toUpperCase()}
                     </div>
                   )}
-                  <span className="text-xs font-bold text-[#0F243B] dark:text-white hidden sm:inline max-w-[100px] truncate">
+                  <span className="text-xs font-bold text-[#102B50] dark:text-white hidden sm:inline max-w-[100px] truncate">
                     {displayName}
                   </span>
                   <ChevronDown className="w-3.5 h-3.5 text-[#708096] dark:text-slate-400" />
@@ -603,7 +603,7 @@ export default function ProfilePage() {
               
               {/* Profile & Settings Page Header */}
               <div>
-                <h1 className="text-2xl font-extrabold text-[#0F243B] dark:text-white font-display">
+                <h1 className="text-2xl font-extrabold text-[#102B50] dark:text-white font-display">
                   Profile & Settings
                 </h1>
                 <p className="text-xs text-[#708096] dark:text-slate-400 mt-0.5">
@@ -613,7 +613,7 @@ export default function ProfilePage() {
 
               {/* Status Alert Messages */}
               {successMsg && (
-                <div className="p-3.5 rounded-xl bg-[#EAF6EF] dark:bg-emerald-950/40 border border-[#0E7057]/30 dark:border-emerald-800/40 flex items-center gap-2.5 text-xs font-bold text-[#0E7057] dark:text-emerald-400 shadow-2xs">
+                <div className="p-3.5 rounded-xl bg-[#EAF6EF] dark:bg-emerald-950/40 border border-[#07866D]/30 dark:border-emerald-800/40 flex items-center gap-2.5 text-xs font-bold text-[#07866D] dark:text-emerald-400 shadow-2xs">
                   <CheckCircle className="w-4 h-4 shrink-0" />
                   <span>{successMsg}</span>
                 </div>
@@ -635,7 +635,7 @@ export default function ProfilePage() {
                 <div className="lg:col-span-7 xl:col-span-8 space-y-5">
                   
                   {/* 1. Upload Profile Picture Card */}
-                  <div className="rounded-2xl border border-[#EAEFEA] dark:border-slate-800 p-4 sm:p-5 bg-white dark:bg-[#131B2E] shadow-2xs flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5 transition-colors">
+                  <div className="rounded-2xl border border-[#E5EAE7] dark:border-slate-800 p-4 sm:p-5 bg-white dark:bg-[#131B2E] shadow-2xs flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5 transition-colors">
                     <div className="relative shrink-0">
                       {avatar ? (
                         <img
@@ -1006,20 +1006,20 @@ export default function ProfilePage() {
                   </div>
 
                   {/* Card 2: Quick Stats Card */}
-                  <div className="rounded-2xl border border-[#EAEFEA] dark:border-slate-800 bg-white dark:bg-[#131B2E] p-5 shadow-2xs space-y-4 transition-colors">
+                  <div className="rounded-2xl border border-[#E5EAE7] dark:border-slate-800 bg-white dark:bg-[#131B2E] p-5 shadow-2xs space-y-4 transition-colors">
                     <div className="flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-[#0E7057] dark:text-emerald-400" />
-                      <h3 className="text-xs font-bold text-[#0F243B] dark:text-white">Quick Stats</h3>
+                      <Sparkles className="w-4 h-4 text-[#07866D] dark:text-emerald-400" />
+                      <h3 className="text-xs font-bold text-[#102B50] dark:text-white">Quick Stats</h3>
                     </div>
 
                     <div className="space-y-3.5">
                       {/* Stat 1: Skills You Can Teach */}
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-[#EAF6EF] dark:bg-emerald-950/60 text-[#0E7057] dark:text-emerald-400 border border-[#D8EFE4] dark:border-emerald-800/40 flex items-center justify-center shrink-0">
+                        <div className="w-9 h-9 rounded-full bg-[#EAF6EF] dark:bg-emerald-950/60 text-[#07866D] dark:text-emerald-400 border border-[#07866D]/20 dark:border-emerald-800/40 flex items-center justify-center shrink-0">
                           <Users className="w-4 h-4" />
                         </div>
                         <div>
-                          <div className="text-sm font-extrabold text-[#0F243B] dark:text-white leading-none">
+                          <div className="text-sm font-extrabold text-[#102B50] dark:text-white leading-none">
                             {teachingSkills.length || 12}
                           </div>
                           <div className="text-[11px] text-[#708096] dark:text-slate-400 mt-0.5">
@@ -1030,11 +1030,11 @@ export default function ProfilePage() {
 
                       {/* Stat 2: Skills You Want to Learn */}
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-[#EDF7F2] dark:bg-sky-950/60 text-[#0284C7] dark:text-sky-400 border border-[#D0E7DC] dark:border-sky-800/40 flex items-center justify-center shrink-0">
+                        <div className="w-9 h-9 rounded-full bg-[#EEF6FC] dark:bg-sky-950/60 text-[#0284C7] dark:text-sky-400 border border-[#183A60]/15 dark:border-sky-800/40 flex items-center justify-center shrink-0">
                           <GraduationCap className="w-4 h-4" />
                         </div>
                         <div>
-                          <div className="text-sm font-extrabold text-[#0F243B] dark:text-white leading-none">
+                          <div className="text-sm font-extrabold text-[#102B50] dark:text-white leading-none">
                             {learningSkills.length || 8}
                           </div>
                           <div className="text-[11px] text-[#708096] dark:text-slate-400 mt-0.5">
@@ -1045,11 +1045,11 @@ export default function ProfilePage() {
 
                       {/* Stat 3: Active Swap Agreements */}
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-[#EAF6EF] dark:bg-emerald-950/60 text-[#0E7057] dark:text-emerald-400 border border-[#D8EFE4] dark:border-emerald-800/40 flex items-center justify-center shrink-0">
+                        <div className="w-9 h-9 rounded-full bg-[#EAF6EF] dark:bg-emerald-950/60 text-[#07866D] dark:text-emerald-400 border border-[#07866D]/20 dark:border-emerald-800/40 flex items-center justify-center shrink-0">
                           <ArrowRightLeft className="w-4 h-4" />
                         </div>
                         <div>
-                          <div className="text-sm font-extrabold text-[#0F243B] dark:text-white leading-none">
+                          <div className="text-sm font-extrabold text-[#102B50] dark:text-white leading-none">
                             {profile?.activeSwapsCount || 5}
                           </div>
                           <div className="text-[11px] text-[#708096] dark:text-slate-400 mt-0.5">
@@ -1060,11 +1060,11 @@ export default function ProfilePage() {
 
                       {/* Stat 4: Successful Swaps */}
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-[#EAF6EF] dark:bg-emerald-950/60 text-[#0E7057] dark:text-emerald-400 border border-[#D8EFE4] dark:border-emerald-800/40 flex items-center justify-center shrink-0">
+                        <div className="w-9 h-9 rounded-full bg-[#EAF6EF] dark:bg-emerald-950/60 text-[#07866D] dark:text-emerald-400 border border-[#07866D]/20 dark:border-emerald-800/40 flex items-center justify-center shrink-0">
                           <CheckCircle className="w-4 h-4" />
                         </div>
                         <div>
-                          <div className="text-sm font-extrabold text-[#0F243B] dark:text-white leading-none">
+                          <div className="text-sm font-extrabold text-[#102B50] dark:text-white leading-none">
                             {profile?.completedSwapsCount || 3}
                           </div>
                           <div className="text-[11px] text-[#708096] dark:text-slate-400 mt-0.5">
@@ -1076,15 +1076,15 @@ export default function ProfilePage() {
                   </div>
 
                   {/* Card 3: Learning Goals Card */}
-                  <div className="rounded-2xl border border-[#EAEFEA] dark:border-slate-800 bg-white dark:bg-[#131B2E] p-5 shadow-2xs space-y-3.5 transition-colors">
+                  <div className="rounded-2xl border border-[#E5EAE7] dark:border-slate-800 bg-white dark:bg-[#131B2E] p-5 shadow-2xs space-y-3.5 transition-colors">
                     <div className="flex items-center gap-2">
-                      <Target className="w-4 h-4 text-[#0E7057] dark:text-emerald-400" />
-                      <h3 className="text-xs font-bold text-[#0F243B] dark:text-white">Learning Goals</h3>
+                      <Target className="w-4 h-4 text-[#07866D] dark:text-emerald-400" />
+                      <h3 className="text-xs font-bold text-[#102B50] dark:text-white">Learning Goals</h3>
                     </div>
 
                     <div className="space-y-2.5">
                       <div className="flex items-center gap-2.5 text-xs text-[#24364B] dark:text-slate-200">
-                        <div className="w-4 h-4 rounded-full bg-[#0E7057] text-white flex items-center justify-center shrink-0">
+                        <div className="w-4 h-4 rounded-full bg-[#07866D] text-white flex items-center justify-center shrink-0">
                           <Check className="w-2.5 h-2.5 stroke-[3]" />
                         </div>
                         <span>
@@ -1093,7 +1093,7 @@ export default function ProfilePage() {
                       </div>
 
                       <div className="flex items-center gap-2.5 text-xs text-[#24364B] dark:text-slate-200">
-                        <div className="w-4 h-4 rounded-full bg-[#0E7057] text-white flex items-center justify-center shrink-0">
+                        <div className="w-4 h-4 rounded-full bg-[#07866D] text-white flex items-center justify-center shrink-0">
                           <Check className="w-2.5 h-2.5 stroke-[3]" />
                         </div>
                         <span>
@@ -1102,14 +1102,14 @@ export default function ProfilePage() {
                       </div>
 
                       <div className="flex items-center gap-2.5 text-xs text-[#24364B] dark:text-slate-200">
-                        <div className="w-4 h-4 rounded-full bg-[#0E7057] text-white flex items-center justify-center shrink-0">
+                        <div className="w-4 h-4 rounded-full bg-[#07866D] text-white flex items-center justify-center shrink-0">
                           <Check className="w-2.5 h-2.5 stroke-[3]" />
                         </div>
                         <span>Build real projects</span>
                       </div>
 
                       <div className="flex items-center gap-2.5 text-xs text-[#24364B] dark:text-slate-200">
-                        <div className="w-4 h-4 rounded-full bg-[#0E7057] text-white flex items-center justify-center shrink-0">
+                        <div className="w-4 h-4 rounded-full bg-[#07866D] text-white flex items-center justify-center shrink-0">
                           <Check className="w-2.5 h-2.5 stroke-[3]" />
                         </div>
                         <span>Find a mentor</span>
@@ -1119,20 +1119,20 @@ export default function ProfilePage() {
 
                   {/* Community Reviews (Preserved from original Profile Page) */}
                   {profile?.ratings && profile.ratings.length > 0 && (
-                    <div className="rounded-2xl border border-[#EAEFEA] dark:border-slate-800 bg-white dark:bg-[#131B2E] p-5 shadow-2xs space-y-3 transition-colors">
+                    <div className="rounded-2xl border border-[#E5EAE7] dark:border-slate-800 bg-white dark:bg-[#131B2E] p-5 shadow-2xs space-y-3 transition-colors">
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1.5 text-xs font-bold text-[#0F243B] dark:text-white">
+                        <div className="flex items-center gap-1.5 text-xs font-bold text-[#102B50] dark:text-white">
                           <Star className="w-3.5 h-3.5 text-[#E7A62C] fill-[#E7A62C]" />
                           <span>Community Reviews ({profile.ratings.length})</span>
                         </div>
-                        <span className="text-xs font-bold text-[#0E7057] dark:text-emerald-400">
+                        <span className="text-xs font-bold text-[#07866D] dark:text-emerald-400">
                           ★ {profile.rating?.toFixed(1) || '5.0'}
                         </span>
                       </div>
                       <div className="space-y-2">
                         {profile.ratings.slice(0, 2).map((r, idx) => (
-                          <div key={idx} className="p-2.5 rounded-xl bg-[#FAFBF9] dark:bg-[#0E1526] border border-[#EAEFEA] dark:border-slate-800 text-[11px]">
-                            <div className="font-bold text-[#0F243B] dark:text-white">{r.rater?.name || 'Member'}</div>
+                          <div key={idx} className="p-2.5 rounded-xl bg-[#FAF9F5] dark:bg-[#0E1526] border border-[#E5EAE7] dark:border-slate-800 text-[11px]">
+                            <div className="font-bold text-[#102B50] dark:text-white">{r.rater?.name || 'Member'}</div>
                             {r.comment && <p className="text-[#708096] dark:text-slate-400 italic mt-0.5">"{r.comment}"</p>}
                           </div>
                         ))}
